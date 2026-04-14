@@ -346,7 +346,7 @@ class GameSession {
     return false;
   }
 
-  _checkMines() {
+  _checkMines(now) {
     for (const [mineId, mine] of this.mines) {
       let triggered = false;
       let triggerX = mine.x;
@@ -508,11 +508,12 @@ class GameSession {
     // Also update lobby state so spectators see "game in progress"
     this._broadcastLobbyState();
     this.io.emit('s2c:wave_announce', { wave: 1, label: 'Wave 1' });
-    // Spawn pickups for Wave 1
+    // Spawn pickups and mines for Wave 1
     this._spawnPickup('shield');
     this._spawnPickup('shield');
     this._spawnPickup('speed');
     this._spawnPickup('speed');
+    this._spawnMines(MINES_PER_WAVE[0]);
 
     this._startTick();
   }
@@ -642,7 +643,7 @@ class GameSession {
 
     // 8b. Mine collision check (only when not in wave pause)
     if (!this.boss.isPausing()) {
-      this._checkMines();
+      this._checkMines(now);
       this._checkPickups(now);
     }
 
