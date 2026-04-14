@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "mcp__Claude_Preview__preview_start",
+      "Read(//usr/**)",
+      "Bash(/dev/null -name npm -type f)",
+      "Read(//opt/homebrew/**)",
+      "Bash(/dev/null -name node -type f)"
+    ]
+  }
+}

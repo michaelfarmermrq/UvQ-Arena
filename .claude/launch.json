@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "uvq",
+      "runtimeExecutable": "/usr/local/bin/node",
+      "runtimeArgs": ["server/index.js"],
+      "port": 3000,
+      "autoPort": true
+    }
+  ]
+}

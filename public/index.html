@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>U vs Q</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+
+  <!-- ── Lobby Screen ───────────────────────────────────────────────────── -->
+  <div id="screen-lobby" class="screen active">
+    <div class="lobby-box">
+      <h1 class="title"><span>U</span><span class="vs">vs</span><span>Q</span></h1>
+      <p class="subtitle">Dodge the Qs. Freeze your rivals. Last U standing wins.</p>
+
+      <div id="lobby-player-list" class="player-list"></div>
+
+      <div id="lobby-countdown" class="countdown hidden"></div>
+
+      <!-- Shown when a game is already running -->
+      <div id="game-in-progress" class="game-in-progress hidden">
+        <div class="game-in-progress-label">Game in progress</div>
+        <div class="game-in-progress-title">A round is underway</div>
+        <div class="game-in-progress-btns">
+          <button id="btn-watch" class="btn-primary btn-watch">Watch</button>
+          <button id="btn-back-lobby" class="btn-secondary">Back to Menu</button>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button id="btn-ready" class="btn-primary">Ready Up</button>
+        <button id="btn-solo" class="btn-secondary">Solo Play</button>
+      </div>
+
+      <div id="testmode-badge" class="testmode-badge hidden">testmode active</div>
+    </div>
+  </div>
+
+  <!-- ── Game Screen ────────────────────────────────────────────────────── -->
+  <div id="screen-game" class="screen">
+    <canvas id="game-canvas" width="1200" height="700"></canvas>
+
+    <!-- Wave announce overlay -->
+    <div id="wave-overlay" class="wave-overlay hidden">
+      <span id="wave-label"></span>
+    </div>
+
+    <!-- Spectator banner (shown when watching without playing) -->
+    <div id="spectator-banner" class="spectator-banner hidden">SPECTATING</div>
+
+    <!-- Leave spectator button -->
+    <div id="spectator-leave" class="spectator-leave hidden">
+      <button id="btn-stop-watch" class="btn-primary btn-watch">Back to Lobby</button>
+    </div>
+  </div>
+
+  <!-- ── Round Over Screen ──────────────────────────────────────────────── -->
+  <div id="screen-round-over" class="screen">
+    <div class="round-over-box">
+      <h2 id="round-over-title"></h2>
+      <p id="round-over-sub">Waiting for next round…</p>
+    </div>
+  </div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script type="module" src="/js/main.js"></script>
+</body>
+</html>
