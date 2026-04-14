@@ -514,11 +514,7 @@ class GameSession {
     // Also update lobby state so spectators see "game in progress"
     this._broadcastLobbyState();
     this.io.emit('s2c:wave_announce', { wave: 1, label: 'Wave 1' });
-    // Spawn pickups and mines for Wave 1
-    this._spawnPickup('shield');
-    this._spawnPickup('shield');
-    this._spawnPickup('speed');
-    this._spawnPickup('speed');
+    // Mines for Wave 1 (pickups are delayed until countdown finishes)
     this._spawnMines(MINES_PER_WAVE[0]);
 
     this._startTick();
@@ -622,6 +618,14 @@ class GameSession {
       this.io.emit('s2c:game_state', this._buildSnapshot());
       this.roundElapsedTicks++;
       return;
+    }
+
+    // First tick after grace ends — spawn Wave 1 pickups now
+    if (this.roundElapsedTicks === ROUND_START_GRACE_TICKS) {
+      this._spawnPickup('shield');
+      this._spawnPickup('shield');
+      this._spawnPickup('speed');
+      this._spawnPickup('speed');
     }
     const newQProjectiles = this.boss.tick(
       this.roundElapsedTicks,
