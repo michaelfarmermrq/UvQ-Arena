@@ -30,7 +30,7 @@ const MINE_AOE_R       = 80;  // px — AOE blast radius
 const MINE_SAFE_SPAWN_R = 120; // px — minimum distance from any player at spawn
 
 // Mines placed at start of each wave (index = waveNum - 1)
-const MINES_PER_WAVE = [2, 4, 6, 8]; // progressive mine count per wave
+const MINES_PER_WAVE = [0, 8, 12, 16]; // progressive mine count per wave
 
 // ─── Solo mode constants ─────────────────────────────────────────────────────
 // Bots spawned at the start of each wave (index = waveNum - 1).
@@ -290,7 +290,7 @@ class GameSession {
       x = margin + Math.random() * (ARENA_W - margin * 2);
       y = margin + Math.random() * (ARENA_H - margin * 2);
       attempts++;
-    } while (this._tooCloseToAnyPlayer(x, y, 100) && attempts < 20);
+    } while ((this._tooCloseToAnyPlayer(x, y, 100) || this._tooCloseToBoss(x, y, 120)) && attempts < 30);
 
     const pickup = new Pickup({ x, y, type });
     this.pickups.set(pickup.id, pickup);
@@ -329,11 +329,17 @@ class GameSession {
         x = margin + Math.random() * (ARENA_W - margin * 2);
         y = margin + Math.random() * (ARENA_H - margin * 2);
         attempts++;
-      } while (this._tooCloseToAnyPlayer(x, y, MINE_SAFE_SPAWN_R) && attempts < 20);
+      } while ((this._tooCloseToAnyPlayer(x, y, MINE_SAFE_SPAWN_R) || this._tooCloseToBoss(x, y, 120)) && attempts < 30);
 
       const mine = new Mine({ x, y });
       this.mines.set(mine.id, mine);
     }
+  }
+
+  _tooCloseToBoss(x, y, minDist) {
+    const dx = this.boss.x - x;
+    const dy = this.boss.y - y;
+    return dx * dx + dy * dy < minDist * minDist;
   }
 
   _tooCloseToAnyPlayer(x, y, minDist) {
