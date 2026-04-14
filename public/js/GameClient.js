@@ -32,6 +32,7 @@ export class GameClient {
     this._elimAnimations = new Map();
     this._mineBlasts = []; // { x, y, startTime }[] for AOE flash animations
     this._meleeAnim = null; // { dirX, dirY, startTime } — thrust animation
+    this._hitFlashes = new Map(); // id → { startTime } — brief red flash on hit
 
     // Client-side position for zero-latency local player rendering
     this._localPos = { x: ARENA_W / 2, y: ARENA_H / 2 };
@@ -113,6 +114,9 @@ export class GameClient {
       this.hud.setHp(data.hp);
       this.hud.triggerHitFlash();
     }
+    // Flash the hit player's glyph red
+    this._hitFlashes.set(data.targetId, { startTime: performance.now() });
+    setTimeout(() => this._hitFlashes.delete(data.targetId), 200);
   }
 
   onPlayerEliminated(data) {
@@ -138,11 +142,9 @@ export class GameClient {
   }
 
   onMeleeHit(data) {
-    // Flash for opponents that got hit
-    if (data.targetId !== this.localPlayerId) {
-      this._elimAnimations.set(data.targetId + '_melee', { startTime: performance.now() });
-      setTimeout(() => this._elimAnimations.delete(data.targetId + '_melee'), 200);
-    }
+    // Flash the hit player's glyph red
+    this._hitFlashes.set(data.targetId, { startTime: performance.now() });
+    setTimeout(() => this._hitFlashes.delete(data.targetId), 200);
   }
 
   onMineTriggered(data) {
@@ -243,6 +245,7 @@ export class GameClient {
       hud: this.hud,
       mineBlasts: this._mineBlasts,
       meleeAnim: this._meleeAnim,
+      hitFlashes: this._hitFlashes,
     });
   }
 }

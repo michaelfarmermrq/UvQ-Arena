@@ -39,6 +39,7 @@ export class Renderer {
     hud,
     mineBlasts,
     meleeAnim,
+    hitFlashes,
   }) {
     const ctx = this.ctx;
     const msSince = now - snapshotTime;
@@ -98,14 +99,14 @@ export class Renderer {
     for (const p of remotePlayers) {
       if (!p.alive && !elimAnimations.has(p.id)) continue;
       const pos = interpolator.getPosition(p.id, now) || { x: p.x, y: p.y };
-      this._drawPlayer(ctx, pos.x, pos.y, p, false, elimAnimations, now);
+      this._drawPlayer(ctx, pos.x, pos.y, p, false, elimAnimations, now, hitFlashes);
     }
 
     if (localPlayer) {
       // Use client-side position for zero-latency rendering.
       // Fall back to snapshot coords if localPos isn't available yet.
       const pos = localPos || localPlayer;
-      this._drawPlayer(ctx, pos.x, pos.y, localPlayer, true, elimAnimations, now);
+      this._drawPlayer(ctx, pos.x, pos.y, localPlayer, true, elimAnimations, now, hitFlashes);
     }
 
     // 8. HUD
@@ -341,7 +342,7 @@ export class Renderer {
     ctx.restore();
   }
 
-  _drawPlayer(ctx, x, y, player, isLocal, elimAnimations, now) {
+  _drawPlayer(ctx, x, y, player, isLocal, elimAnimations, now, hitFlashes) {
     ctx.save();
 
     let size = PLAYER_SIZE;
@@ -355,6 +356,10 @@ export class Renderer {
       size = PLAYER_SIZE + (PLAYER_SIZE * 1.5 * progress); // grow to 2.5×
       color = `rgba(255, ${Math.round(80 * (1 - progress))}, ${Math.round(80 * (1 - progress))}, ${1 - progress * 0.3})`;
       alpha = 1 - progress * 0.3;
+    } else if (hitFlashes && hitFlashes.has(player.id)) {
+      color = '#ff3333';
+      ctx.shadowColor = 'rgba(255,50,50,0.9)';
+      ctx.shadowBlur = 18;
     } else if (player.frozen) {
       color = '#88ccff';
       ctx.shadowColor = 'rgba(68,170,255,0.9)';
