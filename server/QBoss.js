@@ -11,8 +11,9 @@ const WAVE_THRESHOLDS_TICKS = [
   3600, // Wave 4 at 180s
 ];
 
-const WAVE_PAUSE_TICKS = 100;      // 5s "powering up" message
-const WAVE_COUNTDOWN_TICKS = 60;   // 3s countdown after powering up
+const WAVE_PAUSE_TICKS = 100;          // 5s "powering up" message
+const WAVE_ANNOUNCE_TICKS = 40;        // 2s wave title display
+const WAVE_COUNTDOWN_TICKS = 60;       // 3s countdown after wave title
 
 class QBoss {
   constructor() {
@@ -23,14 +24,18 @@ class QBoss {
     this._currentWaveIndex = 0; // index into WAVE_PATTERNS
     this._ticksSinceLastBurst = 0;
     this._pauseTicksRemaining = 0;
+    this._waveAnnounceTicksRemaining = 0;
     this._countdownTicksRemaining = 0;
+    this._pendingWaveAnnounce = null; // { waveNum, label } deferred until pause ends
   }
 
   reset() {
     this._currentWaveIndex = 0;
     this._ticksSinceLastBurst = 0;
     this._pauseTicksRemaining = 0;
+    this._waveAnnounceTicksRemaining = 0;
     this._countdownTicksRemaining = 0;
+    this._pendingWaveAnnounce = null;
     this.visible = true;
 
     // Reset stateful wave generators
@@ -63,17 +68,34 @@ class QBoss {
       this._pauseTicksRemaining = WAVE_PAUSE_TICKS;
       this._ticksSinceLastBurst = 0;
       const pattern = WAVE_PATTERNS[this._currentWaveIndex];
-      emitWaveAnnounce(pattern.wave, pattern.label);
+      // Defer wave announce until powering-up phase ends
+      this._pendingWaveAnnounce = { waveNum: pattern.wave, label: pattern.label };
     }
 
+    // Phase 1: "Boss Q powering up" message
     if (this._pauseTicksRemaining > 0) {
       this._pauseTicksRemaining--;
       if (this._pauseTicksRemaining === 0) {
+        // Emit the wave announce now and start the announce display phase
+        if (this._pendingWaveAnnounce) {
+          emitWaveAnnounce(this._pendingWaveAnnounce.waveNum, this._pendingWaveAnnounce.label);
+          this._pendingWaveAnnounce = null;
+        }
+        this._waveAnnounceTicksRemaining = WAVE_ANNOUNCE_TICKS;
+      }
+      return newProjectiles;
+    }
+
+    // Phase 2: Wave title display ("Wave 2", etc.)
+    if (this._waveAnnounceTicksRemaining > 0) {
+      this._waveAnnounceTicksRemaining--;
+      if (this._waveAnnounceTicksRemaining === 0) {
         this._countdownTicksRemaining = WAVE_COUNTDOWN_TICKS;
       }
       return newProjectiles;
     }
 
+    // Phase 3: Countdown (3-2-1)
     if (this._countdownTicksRemaining > 0) {
       this._countdownTicksRemaining--;
       return newProjectiles;
@@ -113,9 +135,9 @@ class QBoss {
     return Math.ceil(ticksRemaining / 20); // 20 ticks/s → seconds
   }
 
-  /** True when we're in the between-wave pause or countdown (no spawning, no combat). */
+  /** True when we're in any between-wave phase (no spawning, no combat). */
   isPausing() {
-    return this._pauseTicksRemaining > 0 || this._countdownTicksRemaining > 0;
+    return this._pauseTicksRemaining > 0 || this._waveAnnounceTicksRemaining > 0 || this._countdownTicksRemaining > 0;
   }
 
   toState() {
