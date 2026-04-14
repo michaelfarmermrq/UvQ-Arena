@@ -80,43 +80,72 @@ const WAVE_PATTERNS = [
     },
   },
 
-  // ── Wave 3 ── Dense horizontal / directional walls with gaps ──────────────
-  // Phase 0 (0–15s):  top-down walls, 2 gaps
-  // Phase 1 (15–30s): top-down walls with drift (vx ±0.8), 2 gaps
-  // Phase 2 (30–45s): top-down walls, 1 gap (harder)
-  // Phase 3+ (45s+):  drift walls, 1 gap, drift direction alternates
+  // ── Wave 3 ── Walls from top + sides ──────────────────────────────────────
+  // Phase 0 (0–15s):  top-down walls, 2 small gaps (30 columns = tight spacing)
+  // Phase 1 (15–30s): top-down + left-to-right walls alternating, 2 gaps
+  // Phase 2 (30–45s): top-down walls, 1 gap, faster; side walls with 1 gap
+  // Phase 3+ (45s+):  both directions, 1 gap, faster, drift added
   {
     wave: 3,
     label: 'Wave 3',
-    burstIntervalTicks: 65,
+    burstIntervalTicks: 50,
     _burstCount: 0,
     _wallSeed: 0,
     generate(boss, _players, _tick) {
-      const phase   = Math.floor(this._burstCount / 4); // 4 bursts × 65 ticks ≈ 13s ≈ 15s
-      const count   = 22;
-      const spacing = 1200 / count;
-      const speed   = 4.4;
-
+      const phase = Math.floor(this._burstCount / 6); // 6 bursts × 50 ticks = 300 ticks = 15s
       const seed = this._wallSeed++;
-      const gap1 = seed % count;
-      const gap2 = (seed * 7 + 3) % count;
-
-      const twoGaps  = phase < 2;
-      const driftVx  = (phase === 1 || phase >= 3)
-        ? ((phase % 2 === 0) ? 0.8 : -0.8)
-        : 0;
-
       const spawns = [];
-      for (let i = 0; i < count; i++) {
-        if (i === gap1) continue;
-        if (twoGaps && i === gap2) continue;
-        spawns.push({
-          x: spacing * i + spacing / 2,
-          y: boss.y + 20,
-          vx: driftVx,
-          vy: speed,
-        });
+
+      const spawnWall = (axis, count, speed, gapCount, drift) => {
+        const isHorizontal = axis === 'top'; // top-down wall
+        const len = isHorizontal ? 1200 : 700;
+        const spacing = len / count;
+        const gap1 = seed % count;
+        const gap2 = (seed * 7 + 3) % count;
+        // Ensure gaps aren't adjacent for tighter walls
+        const gap2Adj = Math.abs(gap2 - gap1) <= 1 ? (gap1 + Math.floor(count / 2)) % count : gap2;
+
+        for (let i = 0; i < count; i++) {
+          if (i === gap1) continue;
+          if (gapCount >= 2 && i === gap2Adj) continue;
+          if (isHorizontal) {
+            spawns.push({ x: spacing * i + spacing / 2, y: -10, vx: drift, vy: speed });
+          } else {
+            // Left-to-right wall
+            const fromLeft = seed % 2 === 0;
+            spawns.push({
+              x: fromLeft ? -10 : 1210,
+              y: spacing * i + spacing / 2,
+              vx: fromLeft ? speed : -speed,
+              vy: drift,
+            });
+          }
+        }
+      };
+
+      if (phase === 0) {
+        // Top-down only, 30 columns, 2 gaps
+        spawnWall('top', 30, 4.4, 2, 0);
+      } else if (phase === 1) {
+        // Alternate top-down and side walls
+        if (this._burstCount % 2 === 0) {
+          spawnWall('top', 30, 4.4, 2, 0);
+        } else {
+          spawnWall('side', 18, 4.0, 2, 0);
+        }
+      } else if (phase === 2) {
+        // Top-down with 1 gap (harder), plus side walls every other burst
+        spawnWall('top', 30, 5.0, 1, 0);
+        if (this._burstCount % 2 === 0) {
+          spawnWall('side', 18, 4.0, 1, 0);
+        }
+      } else {
+        // Both directions, 1 gap, drift added
+        const drift = (phase % 2 === 0) ? 0.6 : -0.6;
+        spawnWall('top', 30, 5.5, 1, drift);
+        spawnWall('side', 18, 4.5, 1, drift);
       }
+
       this._burstCount++;
       return spawns;
     },
@@ -130,10 +159,10 @@ const WAVE_PATTERNS = [
   {
     wave: 4,
     label: 'Wave 4',
-    burstIntervalTicks: 40,
+    burstIntervalTicks: 18,
     _burstCount: 0,
     generate(boss, players, _tick) {
-      const phase = Math.floor(this._burstCount / 7); // 7 × 40 ticks ≈ 14s ≈ 15s
+      const phase = Math.floor(this._burstCount / 16); // 16 × 18 ticks ≈ 288 ticks ≈ 15s
       const speed = 3.85;
 
       let nearestTarget = null;

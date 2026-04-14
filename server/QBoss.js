@@ -27,6 +27,7 @@ class QBoss {
     this._waveAnnounceTicksRemaining = 0;
     this._countdownTicksRemaining = 0;
     this._pendingWaveAnnounce = null; // { waveNum, label } deferred until pause ends
+    this._countdownJustEnded = false; // true for one tick after countdown finishes
   }
 
   reset() {
@@ -36,6 +37,7 @@ class QBoss {
     this._waveAnnounceTicksRemaining = 0;
     this._countdownTicksRemaining = 0;
     this._pendingWaveAnnounce = null;
+    this._countdownJustEnded = false;
     this.visible = true;
 
     // Reset stateful wave generators
@@ -57,6 +59,7 @@ class QBoss {
    */
   tick(roundElapsedTicks, players, emitWaveAnnounce) {
     const newProjectiles = [];
+    this._countdownJustEnded = false;
 
     // Check for wave advancement
     const nextWaveIndex = this._currentWaveIndex + 1;
@@ -98,6 +101,9 @@ class QBoss {
     // Phase 3: Countdown (3-2-1)
     if (this._countdownTicksRemaining > 0) {
       this._countdownTicksRemaining--;
+      if (this._countdownTicksRemaining === 0) {
+        this._countdownJustEnded = true;
+      }
       return newProjectiles;
     }
 
@@ -133,6 +139,11 @@ class QBoss {
     if (nextWaveIndex >= WAVE_PATTERNS.length) return null;
     const ticksRemaining = Math.max(0, WAVE_THRESHOLDS_TICKS[nextWaveIndex] - roundElapsedTicks);
     return Math.ceil(ticksRemaining / 20); // 20 ticks/s → seconds
+  }
+
+  /** True for exactly one tick after the between-wave countdown finishes. */
+  didCountdownEnd() {
+    return this._countdownJustEnded;
   }
 
   /** True when we're in any between-wave phase (no spawning, no combat). */

@@ -641,15 +641,18 @@ class GameSession {
         // Spawn mines for the new wave
         const mineCount = MINES_PER_WAVE[waveNum - 1] ?? 0;
         if (mineCount > 0) this._spawnMines(mineCount);
-        // Spawn pickups on every wave transition
-        this._spawnPickup('shield');
-        this._spawnPickup('shield');
-        this._spawnPickup('speed');
-        this._spawnPickup('speed');
       }
     );
     for (const proj of newQProjectiles) {
       this.qProjectiles.set(proj.id, proj);
+    }
+
+    // 8a. Spawn pickups when a between-wave countdown finishes
+    if (this.boss.didCountdownEnd()) {
+      this._spawnPickup('shield');
+      this._spawnPickup('shield');
+      this._spawnPickup('speed');
+      this._spawnPickup('speed');
     }
 
     // 8b. Mine collision check (only when not in wave pause)
