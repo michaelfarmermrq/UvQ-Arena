@@ -177,6 +177,7 @@ export class GameClient {
     let speedMult = 1;
     if (this._snapshot) {
       const me = this._snapshot.players.find((p) => p.id === this.localPlayerId);
+      this.input.frozen = !!(me && me.frozen);
       if (me && (me.frozen || !me.alive)) return;
       if (me?.speeding) speedMult = 1.25; // speed boost active
     }

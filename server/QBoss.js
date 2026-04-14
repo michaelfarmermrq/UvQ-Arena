@@ -11,7 +11,8 @@ const WAVE_THRESHOLDS_TICKS = [
   3600, // Wave 4 at 180s
 ];
 
-const WAVE_PAUSE_TICKS = 100; // 5s pause on wave transition
+const WAVE_PAUSE_TICKS = 100;      // 5s "powering up" message
+const WAVE_COUNTDOWN_TICKS = 60;   // 3s countdown after powering up
 
 class QBoss {
   constructor() {
@@ -22,12 +23,14 @@ class QBoss {
     this._currentWaveIndex = 0; // index into WAVE_PATTERNS
     this._ticksSinceLastBurst = 0;
     this._pauseTicksRemaining = 0;
+    this._countdownTicksRemaining = 0;
   }
 
   reset() {
     this._currentWaveIndex = 0;
     this._ticksSinceLastBurst = 0;
     this._pauseTicksRemaining = 0;
+    this._countdownTicksRemaining = 0;
     this.visible = true;
 
     // Reset stateful wave generators
@@ -65,6 +68,14 @@ class QBoss {
 
     if (this._pauseTicksRemaining > 0) {
       this._pauseTicksRemaining--;
+      if (this._pauseTicksRemaining === 0) {
+        this._countdownTicksRemaining = WAVE_COUNTDOWN_TICKS;
+      }
+      return newProjectiles;
+    }
+
+    if (this._countdownTicksRemaining > 0) {
+      this._countdownTicksRemaining--;
       return newProjectiles;
     }
 
@@ -102,9 +113,9 @@ class QBoss {
     return Math.ceil(ticksRemaining / 20); // 20 ticks/s → seconds
   }
 
-  /** True when we're in the between-wave pause (no spawning, no combat). */
+  /** True when we're in the between-wave pause or countdown (no spawning, no combat). */
   isPausing() {
-    return this._pauseTicksRemaining > 0;
+    return this._pauseTicksRemaining > 0 || this._countdownTicksRemaining > 0;
   }
 
   toState() {
@@ -115,6 +126,9 @@ class QBoss {
       wavePausing: this._pauseTicksRemaining > 0,
       wavePauseRemaining: this._pauseTicksRemaining > 0
         ? Math.ceil(this._pauseTicksRemaining / 20)
+        : 0,
+      waveCountdown: this._countdownTicksRemaining > 0
+        ? Math.ceil(this._countdownTicksRemaining / 20)
         : 0,
     };
   }

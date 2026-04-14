@@ -31,7 +31,6 @@ const roundOverTitle    = document.getElementById('round-over-title');
 const roundOverSub      = document.getElementById('round-over-sub');
 const gameInProgress    = document.getElementById('game-in-progress');
 const btnWatch          = document.getElementById('btn-watch');
-const btnBackLobby      = document.getElementById('btn-back-lobby');
 const spectatorBanner   = document.getElementById('spectator-banner');
 const spectatorLeave    = document.getElementById('spectator-leave');
 const btnStopWatch      = document.getElementById('btn-stop-watch');
@@ -208,9 +207,6 @@ function stopSpectating() {
 }
 
 btnWatch.addEventListener('click', startSpectating);
-btnBackLobby.addEventListener('click', () => {
-  gameInProgress.classList.add('hidden');
-});
 btnStopWatch.addEventListener('click', stopSpectating);
 
 // ── Lobby rendering ──────────────────────────────────────────────────────────
@@ -257,6 +253,17 @@ function showWaveOverlay(label) {
     waveOverlay.classList.add('hidden');
   }, 2000);
 }
+
+// ── How to Play modal ────────────────────────────────────────────────────────
+const btnHowToPlay   = document.getElementById('btn-how-to-play');
+const howToPlayModal = document.getElementById('how-to-play-modal');
+const btnCloseModal  = document.getElementById('btn-close-modal');
+
+btnHowToPlay.addEventListener('click', () => howToPlayModal.classList.remove('hidden'));
+btnCloseModal.addEventListener('click', () => howToPlayModal.classList.add('hidden'));
+howToPlayModal.addEventListener('click', (e) => {
+  if (e.target === howToPlayModal) howToPlayModal.classList.add('hidden');
+});
 
 // ── Ready button (toggles between ready and unready) ─────────────────────────
 let localReady = false;

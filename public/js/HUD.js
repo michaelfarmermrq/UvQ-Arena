@@ -175,7 +175,7 @@ export class HUD {
     const shieldFlash  = now < this._shieldFlashUntil;
     if (shieldActive || shieldFlash) {
       const fraction = shieldActive ? (this._shieldUntil - now) / SHIELD_DURATION_MS : 0;
-      this._drawStatusRing(ctx, 90, H - 40, fraction, '#0A2ECB', '⬡', shieldFlash);
+      this._drawStatusRing(ctx, 90, H - 40, fraction, '#0A2ECB', '🛡', shieldFlash);
     }
 
     // ── Speed timer ring ──────────────────────────────────────────────────

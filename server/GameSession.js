@@ -30,7 +30,7 @@ const MINE_AOE_R       = 80;  // px — AOE blast radius
 const MINE_SAFE_SPAWN_R = 120; // px — minimum distance from any player at spawn
 
 // Mines placed at start of each wave (index = waveNum - 1)
-const MINES_PER_WAVE = [0, 8, 12, 16]; // progressive mine count per wave
+const MINES_PER_WAVE = [0, 16, 24, 32]; // progressive mine count per wave
 
 // ─── Solo mode constants ─────────────────────────────────────────────────────
 // Bots spawned at the start of each wave (index = waveNum - 1).
@@ -404,10 +404,7 @@ class GameSession {
   }
 
   _getSoloRealPlayer() {
-    for (const p of this.players.values()) {
-      if (!p.isBot) return p;
-    }
-    return null;
+    return this.players.get(this._soloSocketId) || null;
   }
 
   // ─── Lobby / countdown logic ─────────────────────────────────────────────
@@ -420,7 +417,11 @@ class GameSession {
 
   _countAlivePlayers() {
     let n = 0;
-    for (const p of this.players.values()) if (p.alive) n++;
+    for (const p of this.players.values()) {
+      if (!p.alive) continue;
+      if (!(this._roundParticipants.has(p.id) || p.isBot)) continue;
+      n++;
+    }
     return n;
   }
 

@@ -114,9 +114,14 @@ export class Renderer {
       hud.draw(ctx, localPlayer, snapshot.players, now, snapshot);
     }
 
-    // 9. Between-wave pause overlay
+    // 9. Between-wave pause overlay (powering up message, no countdown)
     if (snapshot.boss?.wavePausing) {
-      this._drawWavePause(ctx, snapshot.boss.wavePauseRemaining, snapshot.wave, snapshot.eliminatedCount ?? 0);
+      this._drawWavePause(ctx, snapshot.wave, snapshot.eliminatedCount ?? 0);
+    }
+
+    // 9b. Between-wave countdown (after powering up finishes)
+    if (snapshot.boss?.waveCountdown > 0) {
+      this._drawCountdown(ctx, snapshot.boss.waveCountdown);
     }
 
     // 10. Grace-period countdown — only show final 3 s so it doesn't overlap wave text
@@ -139,7 +144,7 @@ export class Renderer {
     }
   }
 
-  _drawWavePause(ctx, secondsRemaining, currentWave, eliminatedCount) {
+  _drawWavePause(ctx, currentWave, eliminatedCount) {
     ctx.save();
     // Dim overlay
     ctx.fillStyle = 'rgba(0,0,0,0.45)';
@@ -147,7 +152,7 @@ export class Renderer {
 
     // Info card
     const bw = 340;
-    const bh = eliminatedCount > 0 ? 170 : 140;
+    const bh = eliminatedCount > 0 ? 140 : 110;
     const bx = ARENA_W / 2 - bw / 2;
     const by = ARENA_H / 2 - bh / 2;
     ctx.fillStyle = 'rgba(0,0,0,0.8)';
@@ -179,15 +184,6 @@ export class Renderer {
       ctx.font = '13px "Courier New", monospace';
       ctx.fillStyle = 'rgba(255,100,100,0.75)';
       ctx.fillText(`${eliminatedCount} player${eliminatedCount !== 1 ? 's' : ''} eliminated`, ARENA_W / 2, by + 95);
-    }
-
-    // Countdown — show for last 3 s
-    if (secondsRemaining <= 3 && secondsRemaining > 0) {
-      ctx.font = 'bold 52px monospace';
-      ctx.fillStyle = '#0A2ECB';
-      ctx.shadowColor = 'rgba(10,46,203,0.8)';
-      ctx.shadowBlur = 30;
-      ctx.fillText(String(secondsRemaining), ARENA_W / 2, by + bh - 40);
     }
 
     ctx.restore();
@@ -252,25 +248,7 @@ export class Renderer {
   }
 
   _drawMine(ctx, x, y) {
-    ctx.save();
-    // Outer danger ring
-    ctx.beginPath();
-    ctx.arc(x, y, 14, 0, Math.PI * 2);
-    ctx.strokeStyle = 'rgba(255,68,68,0.4)';
-    ctx.lineWidth = 1;
-    ctx.stroke();
-    // Pulsing fill
-    ctx.fillStyle = 'rgba(30,0,0,0.7)';
-    ctx.fill();
-    // Q glyph
-    ctx.font = 'bold 14px monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = '#ff4444';
-    ctx.shadowColor = 'rgba(255,68,68,0.8)';
-    ctx.shadowBlur = 6;
-    ctx.fillText('Q', x, y);
-    ctx.restore();
+    this._drawQProjectile(ctx, x, y);
   }
 
   _drawMineBlast(ctx, x, y, ageMs) {
@@ -371,7 +349,7 @@ export class Renderer {
     // Shield bubble (drawn before player glyph)
     if (player.shielded && !elim) {
       ctx.beginPath();
-      ctx.arc(x, y, PLAYER_SIZE * 0.9, 0, Math.PI * 2);
+      ctx.arc(x, y, PLAYER_SIZE * 0.75, 0, Math.PI * 2);
       ctx.strokeStyle = 'rgba(10,46,203,0.85)';
       ctx.lineWidth = 2.5;
       ctx.shadowColor = 'rgba(10,46,203,0.7)';
@@ -403,7 +381,7 @@ export class Renderer {
       ctx.shadowBlur = 0;
       ctx.textAlign = 'center';
 
-      let curY = y - 22; // start just above the glyph
+      let curY = y - 30; // above the shield bubble (radius 24px)
 
       // "You" label (drawn first, closest to player)
       if (isLocal) {

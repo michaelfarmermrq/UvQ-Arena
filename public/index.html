@@ -24,7 +24,6 @@
         <div class="game-in-progress-title">A round is underway</div>
         <div class="game-in-progress-btns">
           <button id="btn-watch" class="btn-primary btn-watch">Watch</button>
-          <button id="btn-back-lobby" class="btn-secondary">Back to Menu</button>
         </div>
       </div>
 
@@ -33,7 +32,47 @@
         <button id="btn-solo" class="btn-secondary">Solo Play</button>
       </div>
 
+      <button id="btn-how-to-play" class="btn-how-to-play">How to Play</button>
+
       <div id="testmode-badge" class="testmode-badge hidden">testmode active</div>
+    </div>
+
+    <!-- How to Play modal -->
+    <div id="how-to-play-modal" class="modal-overlay hidden">
+      <div class="modal-box">
+        <h2 class="modal-title">How to Play</h2>
+        <div class="instructions-grid">
+          <div class="instruction-item">
+            <span class="instruction-key">WASD</span>
+            <span class="instruction-desc">Move</span>
+          </div>
+          <div class="instruction-item">
+            <span class="instruction-key">Left Click</span>
+            <span class="instruction-desc">Fire a <span class="text-cyan">U</span> projectile that freezes opponents on hit</span>
+          </div>
+          <div class="instruction-item">
+            <span class="instruction-key">Right Click</span>
+            <span class="instruction-desc">Short-range thrust that deals damage in a cone</span>
+          </div>
+        </div>
+        <div class="instructions-rules">
+          <p>Dodge the <span class="text-red">Q</span> projectiles from the boss.</p>
+          <p>Freeze and melee your rivals to eliminate them.</p>
+          <p>Last <span class="text-blue">U</span> standing wins.</p>
+        </div>
+        <div class="instructions-pickups">
+          <h3 class="pickups-title">Pickups</h3>
+          <div class="pickup-row">
+            <span class="pickup-icon pickup-shield">&#x1f6e1;</span>
+            <span class="instruction-desc"><span class="text-blue">Shield</span> — blocks one hit from any source</span>
+          </div>
+          <div class="pickup-row">
+            <span class="pickup-icon pickup-speed">&raquo;</span>
+            <span class="instruction-desc"><span class="text-green">Speed Boost</span> — move 25% faster for 5s</span>
+          </div>
+        </div>
+        <button id="btn-close-modal" class="btn-primary">Got it</button>
+      </div>
     </div>
   </div>
 

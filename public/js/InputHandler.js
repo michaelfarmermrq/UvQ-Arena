@@ -14,6 +14,9 @@ export class InputHandler {
     // Boolean key state read by GameClient each frame
     this.keys = { up: false, down: false, left: false, right: false };
 
+    // Set by GameClient each frame — blocks fire and melee when true
+    this.frozen = false;
+
     this._lastFired  = -FREEZE_COOLDOWN_MS; // ready to fire immediately on page load
     this._lastMelee  = -MELEE_COOLDOWN_MS;
 
@@ -59,6 +62,7 @@ export class InputHandler {
   }
 
   _handleClick(e) {
+    if (this.frozen) return;
     const now = performance.now();
     if (now - this._lastFired < FREEZE_COOLDOWN_MS) return;
     this._lastFired = now;
@@ -70,6 +74,7 @@ export class InputHandler {
 
   _handleContextMenu(e) {
     e.preventDefault(); // always suppress browser context menu on canvas
+    if (this.frozen) return;
     const now = performance.now();
     if (now - this._lastMelee < MELEE_COOLDOWN_MS) return;
     this._lastMelee = now;
