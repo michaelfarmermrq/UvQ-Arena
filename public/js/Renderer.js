@@ -18,6 +18,20 @@ export class Renderer {
   constructor(canvas) {
     this.canvas = canvas;
     this.ctx = canvas.getContext('2d');
+    this._pngs = new Map();
+    this._loadPng('pickup-shield', '/assets/png/shield-pickup.2x.png');
+    this._loadPng('pickup-speed',  '/assets/png/turbo-pickup.2x.png');
+    this._loadPng('arena-bg',      '/assets/png/arena-bg.2x.png');
+  }
+
+  _loadPng(key, src) {
+    const img = new Image();
+    img.onload = () => this._pngs.set(key, img);
+    img.src = src;
+  }
+
+  _getPng(key) {
+    return this._pngs.get(key) || null;
   }
 
   /**
@@ -57,6 +71,12 @@ export class Renderer {
     // ── WORLD-SPACE pass: translated by -camera ──
     ctx.save();
     if (camera) ctx.translate(-camera.x, -camera.y);
+
+    // 1b. Arena background image (covers the world; stretches to arena dims).
+    const bg = this._getPng('arena-bg');
+    if (bg) {
+      ctx.drawImage(bg, 0, 0, ARENA_W, ARENA_H);
+    }
 
     // 2. Arena border glow
     this._drawArenaBorder(ctx);
@@ -235,30 +255,31 @@ export class Renderer {
   }
 
   _drawPickup(ctx, x, y, type) {
+    const key = type === 'shield' ? 'pickup-shield' : 'pickup-speed';
+    const img = this._getPng(key);
+    const size = 42; // on-canvas size; PNG source is 280×280 @2x
+    if (img) {
+      // Gentle bob via a small vertical offset based on time (independent per pickup
+      // location so neighbours don't all bob in lockstep)
+      const bobY = Math.sin((performance.now() + x * 31 + y * 17) / 420) * 2;
+      ctx.drawImage(img, x - size / 2, y - size / 2 + bobY, size, size);
+      return;
+    }
+    // Fallback — procedural ring + icon while PNG loads
     ctx.save();
     const isShield = type === 'shield';
     const ringColor = isShield ? 'rgba(10,46,203,0.8)' : 'rgba(80,220,80,0.8)';
-    const glowColor = isShield ? 'rgba(10,46,203,0.5)' : 'rgba(80,220,80,0.5)';
-
-    // Ring
     ctx.beginPath();
-    ctx.arc(x, y, 14, 0, Math.PI * 2);
+    ctx.arc(x, y, 16, 0, Math.PI * 2);
     ctx.strokeStyle = ringColor;
     ctx.lineWidth = 1.5;
-    ctx.shadowColor = glowColor;
-    ctx.shadowBlur = 10;
     ctx.stroke();
-
-    // Fill
     ctx.fillStyle = 'rgba(0,0,5,0.65)';
     ctx.fill();
-
-    // Icon
     ctx.font = '18px monospace';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = isShield ? '#4488ff' : '#88ff88';
-    ctx.shadowBlur = 8;
     ctx.fillText(isShield ? '🛡' : '»', x, y + 1);
     ctx.restore();
   }
