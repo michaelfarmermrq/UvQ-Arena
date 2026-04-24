@@ -1,0 +1,138 @@
+/* U vs Q · Arena — design tokens
+   Drop this file in and @import or link it. All colors are CSS custom
+   properties; SVG assets reference them via var(--name, #fallback) so
+   they still render if the CSS isn't loaded.
+
+   Fonts resolve from ./fonts/ relative to this file. */
+
+/* ============================================================
+   FONT FACES
+   ============================================================ */
+
+@font-face {
+  font-family: 'Gilroy';
+  font-weight: 400;
+  src: url('./fonts/gilroy-regular.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gilroy';
+  font-weight: 500;
+  src: url('./fonts/gilroy-medium.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gilroy';
+  font-weight: 600;
+  src: url('./fonts/gilroy-semibold.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gilroy';
+  font-weight: 700;
+  src: url('./fonts/gilroy-bold.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gilroy';
+  font-weight: 800;
+  src: url('./fonts/gilroy-extrabold.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Gilroy';
+  font-weight: 900;
+  src: url('./fonts/gilroy-black.woff2') format('woff2');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Formula Condensed';
+  font-weight: 300;
+  src: url('./fonts/FormulaCondensed-Light.woff') format('woff');
+  font-display: swap;
+}
+@font-face {
+  font-family: 'Formula Condensed';
+  font-weight: 700;
+  src: url('./fonts/FormulaCondensed-Bold.woff') format('woff');
+  font-display: swap;
+}
+
+/* ============================================================
+   DESIGN TOKENS
+   ============================================================ */
+
+:root {
+  /* MrQ brand */
+  --uvq-brand-blue-50:  #e6eafa;
+  --uvq-brand-blue-100: #ced5f5;
+  --uvq-brand-blue-200: #9dabea;
+  --uvq-brand-blue-500: #0a2ecb;
+  --uvq-brand-blue-900: #0c2287;
+  --uvq-brand-cyan-500: #00b3ff;
+  --uvq-brand-yellow-500: #ffdf00;
+  --uvq-brand-pink-500: #d000ca;
+
+  /* Danger / status */
+  --uvq-danger-500: #d50000;
+  --uvq-danger-900: #85070d;
+  --uvq-danger-hi:  #ff8a8a;
+  --uvq-danger-glow:#ff0033;
+
+  /* Neutrals (dark mode surfaces) */
+  --uvq-ink:       #0e1120;
+  --uvq-ink-deep:  #05060c;
+  --uvq-neutral-700: #4d505b;
+  --uvq-neutral-500: #808289;
+  --uvq-neutral-400: #999ba1;
+  --uvq-neutral-350: #a6a7ad;
+  --uvq-neutral-200: #cccdd0;
+  --uvq-neutral-100: #e6e6e7;
+  --uvq-neutral-0:   #ffffff;
+
+  /* U palette variants — exposed so hues can be retuned globally */
+  --uvq-u-hero-body:  var(--uvq-brand-blue-500);
+  --uvq-u-hero-shade: var(--uvq-brand-blue-900);
+  --uvq-u-hero-hi:    var(--uvq-brand-blue-200);
+
+  --uvq-u-cyan-body:  var(--uvq-brand-cyan-500);
+  --uvq-u-cyan-shade: #0078b3;
+  --uvq-u-cyan-hi:    #b3e8ff;
+
+  --uvq-u-pink-body:  var(--uvq-brand-pink-500);
+  --uvq-u-pink-shade: #7a0076;
+  --uvq-u-pink-hi:    #f29df0;
+
+  --uvq-u-yellow-body:  var(--uvq-brand-yellow-500);
+  --uvq-u-yellow-shade: #b39c00;
+  --uvq-u-yellow-hi:    #fff49d;
+
+  --uvq-u-ghost-body:  #4d505b;
+  --uvq-u-ghost-shade: #2a2c36;
+  --uvq-u-ghost-hi:    #808289;
+
+  /* Q palette — all red for danger */
+  --uvq-q-body:  var(--uvq-danger-500);
+  --uvq-q-shade: var(--uvq-danger-900);
+  --uvq-q-hi:    var(--uvq-danger-hi);
+  --uvq-q-glow:  var(--uvq-danger-glow);
+
+  /* Typography */
+  --uvq-font-body:    'Gilroy', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --uvq-font-display: 'Formula Condensed', 'Gilroy', sans-serif;
+
+  /* Radii */
+  --uvq-radius-sm: 4px;
+  --uvq-radius-md: 8px;
+  --uvq-radius-lg: 12px;
+  --uvq-radius-xl: 16px;
+  --uvq-radius-pill: 999px;
+
+  /* Spacing */
+  --uvq-space-4:  4px;
+  --uvq-space-8:  8px;
+  --uvq-space-12: 12px;
+  --uvq-space-16: 16px;
+  --uvq-space-24: 24px;
+  --uvq-space-32: 32px;
+}

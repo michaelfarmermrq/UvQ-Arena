@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>U vs Q</title>
+  <link rel="stylesheet" href="/assets/tokens.css" />
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
@@ -14,7 +15,12 @@
       <h1 class="title"><span>U</span><span class="vs">vs</span><span>Q</span></h1>
       <p class="subtitle">Dodge the Qs. Freeze your rivals. Last U standing wins.</p>
 
-      <div id="lobby-player-list" class="player-list"></div>
+      <div id="lobby-loading" class="lobby-loading">
+        <div class="spinner"></div>
+        <span>Connecting…</span>
+      </div>
+
+      <div id="lobby-player-list" class="player-list hidden"></div>
 
       <div id="lobby-countdown" class="countdown hidden"></div>
 
@@ -27,12 +33,12 @@
         </div>
       </div>
 
-      <div class="btn-row">
+      <div class="btn-row hidden">
         <button id="btn-ready" class="btn-primary">Ready Up</button>
         <button id="btn-solo" class="btn-secondary">Solo Play</button>
       </div>
 
-      <button id="btn-how-to-play" class="btn-how-to-play">How to Play</button>
+      <button id="btn-how-to-play" class="btn-how-to-play hidden">How to Play</button>
 
       <div id="testmode-badge" class="testmode-badge hidden">testmode active</div>
     </div>

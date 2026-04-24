@@ -15,6 +15,8 @@ let localPlayerColor = null;
 let localInRound = false;
 // Whether we're currently in spectator mode (watching without playing)
 let isSpectating = false;
+// Whether the first lobby_state has arrived — used to dismiss the connecting spinner
+let playersLoaded = false;
 
 // ── Detect test mode ─────────────────────────────────────────────────────────
 const IS_TEST_MODE = new URLSearchParams(window.location.search).get('testmode') === 'true';
@@ -34,6 +36,9 @@ const btnWatch          = document.getElementById('btn-watch');
 const spectatorBanner   = document.getElementById('spectator-banner');
 const spectatorLeave    = document.getElementById('spectator-leave');
 const btnStopWatch      = document.getElementById('btn-stop-watch');
+const lobbyLoadingEl    = document.getElementById('lobby-loading');
+const btnRowEl          = document.querySelector('.btn-row');
+const btnHowToPlayEl    = document.getElementById('btn-how-to-play');
 
 // ── Connect to server ────────────────────────────────────────────────────────
 function connect() {
@@ -47,6 +52,13 @@ function connect() {
     },
 
     onLobbyState(data) {
+      if (!playersLoaded) {
+        playersLoaded = true;
+        lobbyLoadingEl.classList.add('hidden');
+        playerListEl.classList.remove('hidden');
+        btnRowEl.classList.remove('hidden');
+        btnHowToPlayEl.classList.remove('hidden');
+      }
       renderLobbyPlayerList(data.players);
       if (data.countdown !== null) {
         countdownEl.textContent = `Starting in ${data.countdown}s…`;
@@ -210,20 +222,69 @@ btnWatch.addEventListener('click', startSpectating);
 btnStopWatch.addEventListener('click', stopSpectating);
 
 // ── Lobby rendering ──────────────────────────────────────────────────────────
+
+// U-character SVG template — fetched once, cached, inlined per player so each
+// entry can override the fill gradient stops via inline CSS vars.
+let _uSvgTemplate = null;
+fetch('/assets/svg/u-hero.svg')
+  .then((r) => r.text())
+  .then((t) => {
+    _uSvgTemplate = t;
+    // Re-render any already-visible list entries with placeholder thumbnails.
+    if (playerListEl.children.length > 0 && _lastPlayers) {
+      renderLobbyPlayerList(_lastPlayers);
+    }
+  })
+  .catch(() => {
+    /* Fallback silently — renderLobbyPlayerList handles a null template. */
+  });
+
+let _lastPlayers = null;
+
+/** Darken/lighten a #rrggbb by a 0..1 factor. */
+function shiftHex(hex, factor) {
+  const h = hex.replace('#', '');
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  const mix = (c) => {
+    if (factor >= 0) return Math.round(c + (255 - c) * factor);
+    return Math.round(c * (1 + factor));
+  };
+  const to2 = (n) => Math.max(0, Math.min(255, n)).toString(16).padStart(2, '0');
+  return `#${to2(mix(r))}${to2(mix(g))}${to2(mix(b))}`;
+}
+
 function renderLobbyPlayerList(players) {
+  _lastPlayers = players;
   playerListEl.innerHTML = '';
   if (players.length === 0) {
-    playerListEl.innerHTML = '<p style="color:#555;font-size:13px;text-align:center">No players yet</p>';
+    playerListEl.innerHTML = '<p style="color:#666;font-size:13px;text-align:center">No players yet</p>';
     return;
   }
   for (const p of players) {
     const entry = document.createElement('div');
     entry.className = 'player-entry';
 
-    const dot = document.createElement('span');
-    dot.className = 'player-dot';
-    dot.style.background = p.color;
-    entry.appendChild(dot);
+    // U thumbnail — inline the SVG so the per-player CSS vars cascade into it.
+    const thumb = document.createElement('span');
+    thumb.className = 'player-u';
+    const body  = p.color;
+    const shade = shiftHex(body, -0.4);
+    const hi    = shiftHex(body,  0.4);
+    thumb.style.setProperty('--uvq-u-hero-body', body);
+    thumb.style.setProperty('--uvq-u-hero-shade', shade);
+    thumb.style.setProperty('--uvq-u-hero-hi', hi);
+    if (_uSvgTemplate) {
+      thumb.innerHTML = _uSvgTemplate;
+    } else {
+      // Pre-load fallback: solid circle in the player color.
+      thumb.style.background = body;
+      thumb.style.borderRadius = '50%';
+      thumb.style.width = '12px';
+      thumb.style.height = '12px';
+    }
+    entry.appendChild(thumb);
 
     const name = document.createElement('span');
     name.textContent = p.id === localPlayerId ? 'You' : 'Player';
