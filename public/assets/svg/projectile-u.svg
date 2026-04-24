@@ -12,12 +12,7 @@
       <stop offset="100%" stop-color="var(--uvq-brand-cyan-500, #00b3ff)" stop-opacity="0.9"></stop>
     </linearGradient>
   </defs>
-
-  
   <path d="M 0 40 Q 30 34, 60 40 Q 30 46, 0 40 Z" fill="url(#up-trail)"></path>
-  <ellipse cx="30" cy="40" rx="22" ry="4" fill="var(--uvq-brand-cyan-500, #00b3ff)" opacity="0.35"></ellipse>
-
-  
   <g transform="translate(60 8)">
     <path d="M 4 4 L 4 36 C 4 52, 16 60, 32 60 C 48 60, 60 52, 60 36 L 60 4 L 46 4 L 46 36 C 46 44, 40 48, 32 48 C 24 48, 18 44, 18 36 L 18 4 Z" fill="url(#up-body)" stroke="var(--uvq-brand-blue-900, #0c2287)" stroke-width="2" stroke-linejoin="round"></path>
     <path d="M 7 6 L 7 35 C 7 42, 10 47, 14 48 L 14 6 Z" fill="#fff" opacity="0.45"></path>

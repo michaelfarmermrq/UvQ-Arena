@@ -125,7 +125,7 @@ export class Renderer {
     // 5. U freeze projectiles
     for (const proj of snapshot.uProjectiles) {
       const pos = extrapolateProjectile(proj, msSince);
-      this._drawUProjectile(ctx, pos.x, pos.y);
+      this._drawUProjectile(ctx, pos.x, pos.y, proj.vx, proj.vy);
     }
 
     // 6 + 7. Players (remote first, local on top)
@@ -369,11 +369,21 @@ export class Renderer {
     ctx.restore();
   }
 
-  _drawUProjectile(ctx, x, y) {
+  _drawUProjectile(ctx, x, y, vx = 1, vy = 0) {
     const sprite = getSprite('projectile-u');
     if (sprite) {
-      const s = U_PROJ_SIZE;
-      ctx.drawImage(sprite, x - s / 2, y - s / 2, s, s);
+      // New projectile-u.svg is a 140×80 "bullet with trail" — U head on the
+      // right, cyan trail on the left. Rotate along the velocity vector and
+      // anchor so the U head (roughly 70% of the width from left) sits at
+      // the projectile's reported position, trail extending behind.
+      const w = 56;
+      const h = 32; // maintains 140:80 aspect
+      const angle = Math.atan2(vy, vx);
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      ctx.drawImage(sprite, -w * 0.7, -h / 2, w, h);
+      ctx.restore();
       return;
     }
     // Fallback
@@ -418,15 +428,6 @@ export class Renderer {
       ctx.shadowBlur = 14;
       ctx.stroke();
       ctx.shadowBlur = 0;
-    }
-
-    // Local-player halo — soft white ring behind the sprite
-    if (isLocal && !elim) {
-      ctx.beginPath();
-      ctx.arc(x, y + size * 0.08, size * 0.48, 0, Math.PI * 2);
-      ctx.strokeStyle = 'rgba(255,255,255,0.55)';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
     }
 
     // Player sprite (rasterized from u-hero.svg with per-color CSS vars)
