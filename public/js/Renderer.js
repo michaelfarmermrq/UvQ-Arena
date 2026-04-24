@@ -61,6 +61,7 @@ export class Renderer {
     hud,
     mineBlasts,
     meleeAnim,
+    fireFlash,
     hitFlashes,
     camera,
   }) {
@@ -151,6 +152,17 @@ export class Renderer {
       if (age < 250) {
         const pos = localPos || localPlayer;
         this._drawMeleeThrust(ctx, pos.x, pos.y, meleeAnim.dirX, meleeAnim.dirY, age);
+      }
+    }
+
+    // 10b. Instant fire-flash (client-side) — gives the local player visible
+    // feedback in the frame of the click, before the server-authoritative U
+    // projectile shows up in the next snapshot.
+    if (fireFlash && localPlayer?.alive) {
+      const age = now - fireFlash.startTime;
+      if (age < 140) {
+        const pos = localPos || localPlayer;
+        this._drawFireFlash(ctx, pos.x, pos.y, fireFlash.dirX, fireFlash.dirY, age);
       }
     }
 
@@ -518,6 +530,44 @@ export class Renderer {
     ctx.beginPath();
     ctx.arc(tipX, tipY, 5, 0, Math.PI * 2);
     ctx.fillStyle = '#ffffff';
+    ctx.fill();
+    ctx.restore();
+  }
+
+  _drawFireFlash(ctx, originX, originY, dirX, dirY, ageMs) {
+    // 0–40ms: bright cyan streak ahead of the player; 40–140ms: fade + extend
+    const TOTAL_MS = 140;
+    const progress = ageMs / TOTAL_MS;      // 0 → 1
+    const alpha    = Math.max(0, 1 - progress);
+    const len      = 36 + progress * 28;    // 36 → 64 px
+
+    // Forward offset so the streak starts at the player's rim, not their centre
+    const startOffset = 18;
+    const x0 = originX + dirX * startOffset;
+    const y0 = originY + dirY * startOffset;
+    const x1 = originX + dirX * (startOffset + len);
+    const y1 = originY + dirY * (startOffset + len);
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+
+    // Streak
+    ctx.beginPath();
+    ctx.moveTo(x0, y0);
+    ctx.lineTo(x1, y1);
+    ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.lineWidth = 3.5;
+    ctx.shadowColor = 'rgba(0, 179, 255, 0.9)';
+    ctx.shadowBlur = 14;
+    ctx.lineCap = 'round';
+    ctx.stroke();
+
+    // Muzzle bloom at origin
+    ctx.beginPath();
+    ctx.arc(x0, y0, 10 * (1 - progress * 0.6), 0, Math.PI * 2);
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+    ctx.shadowColor = 'rgba(0, 179, 255, 1)';
+    ctx.shadowBlur = 18;
     ctx.fill();
     ctx.restore();
   }

@@ -31,7 +31,10 @@ export class GameClient {
     this.camera = new Camera({ vpW: VP_W, vpH: VP_H, worldW: ARENA_W, worldH: ARENA_H });
     this.input = new InputHandler(canvas, socket, {
       camera: this.camera,
-      onFired: () => this.hud.onFreezeFired(),
+      onFired: (targetPos) => {
+        this.hud.onFreezeFired();
+        this._startFireFlash(targetPos);
+      },
       onMelee: (targetPos) => this._startMeleeAnim(targetPos),
     });
 
@@ -42,6 +45,7 @@ export class GameClient {
     this._elimAnimations = new Map();
     this._mineBlasts = []; // { x, y, startTime }[] for AOE flash animations
     this._meleeAnim = null; // { dirX, dirY, startTime } — thrust animation
+    this._fireFlash = null; // { dirX, dirY, startTime } — instant-feedback muzzle flash
     this._hitFlashes = new Map(); // id → { startTime } — brief red flash on hit
 
     // Client-side position for zero-latency local player rendering
@@ -152,6 +156,17 @@ export class GameClient {
     const dy = targetPos.y - this._localPos.y;
     const len = Math.sqrt(dx * dx + dy * dy) || 1;
     this._meleeAnim = { dirX: dx / len, dirY: dy / len, startTime: performance.now() };
+  }
+
+  /** Triggered the moment the local player clicks to fire — gives instant
+   *  visual feedback (muzzle flash + ghost streak) before the server-
+   *  authoritative projectile arrives in the next snapshot. */
+  _startFireFlash(targetPos) {
+    if (!this._localPos) return;
+    const dx = targetPos.x - this._localPos.x;
+    const dy = targetPos.y - this._localPos.y;
+    const len = Math.sqrt(dx * dx + dy * dy) || 1;
+    this._fireFlash = { dirX: dx / len, dirY: dy / len, startTime: performance.now() };
   }
 
   onMeleeHit(data) {
@@ -276,6 +291,7 @@ export class GameClient {
       hud: this.hud,
       mineBlasts: this._mineBlasts,
       meleeAnim: this._meleeAnim,
+      fireFlash: this._fireFlash,
       hitFlashes: this._hitFlashes,
       camera: this.camera,
     });

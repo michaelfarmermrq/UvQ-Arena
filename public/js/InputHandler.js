@@ -77,9 +77,9 @@ export class InputHandler {
     const now = performance.now();
     if (now - this._lastFired < FREEZE_COOLDOWN_MS) return;
     this._lastFired = now;
-    this._onFired?.();
 
     const pos = this._toWorld(e.clientX, e.clientY);
+    this._onFired?.(pos);
     this.socket.emit('c2s:fire_freeze', { targetX: pos.x, targetY: pos.y });
   }
 

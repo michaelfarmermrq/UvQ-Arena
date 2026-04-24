@@ -9,7 +9,10 @@ const { checkQToPlayers, checkUToPlayers } = require('./HitDetection');
 const { tickBot } = require('./BotAI');
 
 const TICK_RATE_MS       = 50;    // 20 Hz
-const LOBBY_COUNTDOWN_S  = 10;
+const LOBBY_COUNTDOWN_S  = 20;    // initial countdown when MIN_PLAYERS is reached
+const LOBBY_REJOIN_BUFFER_S = 15; // bump countdown back up to this much when a
+                                  // new player readies up mid-countdown, so
+                                  // late arrivals get a real chance to join.
 const FREEZE_DURATION_MS = 3000;
 const FREEZE_COOLDOWN_MS = 3000;
 const FREEZE_SPEED       = 15;    // px per tick for U projectile
@@ -90,7 +93,17 @@ class GameSession {
     if (!player) return;
     if (this.phase !== 'lobby' && this.phase !== 'round_over') return;
 
+    const wasReady = player.ready;
     player.ready = true;
+
+    // If a countdown is already running and this is a genuinely new ready
+    // (not a no-op re-ready), give late arrivals a buffer so they aren't
+    // dropped from the round.
+    if (!wasReady && this._countdownInterval &&
+        this._countdownRemaining < LOBBY_REJOIN_BUFFER_S) {
+      this._countdownRemaining = LOBBY_REJOIN_BUFFER_S;
+    }
+
     this._broadcastLobbyState();
     this._checkStartCountdown();
   }
