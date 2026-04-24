@@ -246,21 +246,18 @@ export class Renderer {
     ctx.fillStyle = 'rgba(0,0,0,0.4)';
     ctx.fillRect(0, 0, VP_W, VP_H);
 
-    // "GET READY" label above the countdown
-    ctx.font = '700 20px Gilroy, system-ui, sans-serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'rgba(255,255,255,0.65)';
-    ctx.letterSpacing = '0.3em';
-    ctx.fillText('GET READY', VP_W / 2, VP_H / 2 - 110);
-
-    // Countdown number — use PNG if loaded, else fall back to procedural text
+    // Countdown PNG (includes its own "GET READY" styling). Fall back to
+    // procedural text only if the PNG hasn't loaded yet.
     const png = this._getPng(`countdown-${seconds}`);
     if (png) {
-      // PNGs are @2x (source); draw at ~220px on canvas for a commanding presence
       const size = 240;
-      ctx.drawImage(png, VP_W / 2 - size / 2, VP_H / 2 - size / 2 + 10, size, size);
+      ctx.drawImage(png, VP_W / 2 - size / 2, VP_H / 2 - size / 2, size, size);
     } else {
+      ctx.font = '700 20px Gilroy, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = 'rgba(255,255,255,0.65)';
+      ctx.fillText('GET READY', VP_W / 2, VP_H / 2 - 110);
       ctx.font = '700 160px "Formula Condensed", Gilroy, sans-serif';
       ctx.fillStyle = '#0A2ECB';
       ctx.shadowColor = 'rgba(10,46,203,0.8)';

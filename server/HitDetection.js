@@ -1,8 +1,11 @@
 'use strict';
 
-const PLAYER_RADIUS = 14;
-const Q_BULLET_RADIUS = 6;
-const U_FREEZE_RADIUS = 8;
+// Hitbox radii — tuned to line up with the SVG sprite visuals after the
+// design-kit swap. Sprites render larger than the old text glyphs, so the
+// hitboxes grew in proportion to keep "if it looks like a hit, it's a hit."
+const PLAYER_RADIUS = 18;    // U sprite is ~36px visual body at PLAYER_SIZE=56
+const Q_BULLET_RADIUS = 10;  // Q projectile ball ~20px visual at Q_PROJ_SIZE=28
+const U_FREEZE_RADIUS = 12;  // U projectile head ~24px visual
 
 function dist(ax, ay, bx, by) {
   const dx = ax - bx;

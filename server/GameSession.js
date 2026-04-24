@@ -185,8 +185,8 @@ class GameSession {
     const dirX = dx / len;
     const dirY = dy / len;
 
-    // Melee range: 80px (thrust length) + player radius (14px)
-    const MELEE_RANGE = 94;
+    // Melee range: 80px (thrust length) + player radius (18px)
+    const MELEE_RANGE = 98;
 
     for (const target of this.players.values()) {
       if (target.id === attacker.id) continue;
