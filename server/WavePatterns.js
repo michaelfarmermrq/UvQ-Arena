@@ -98,7 +98,7 @@ const WAVE_PATTERNS = [
 
       const spawnWall = (axis, count, speed, gapCount, drift) => {
         const isHorizontal = axis === 'top'; // top-down wall
-        const len = isHorizontal ? 1200 : 700;
+        const len = isHorizontal ? 2000 : 1900; // must match ARENA_W / ARENA_H
         const spacing = len / count;
         const gap1 = seed % count;
         const gap2 = (seed * 7 + 3) % count;
@@ -114,7 +114,7 @@ const WAVE_PATTERNS = [
             // Left-to-right wall
             const fromLeft = seed % 2 === 0;
             spawns.push({
-              x: fromLeft ? -10 : 1210,
+              x: fromLeft ? -10 : 2010,
               y: spacing * i + spacing / 2,
               vx: fromLeft ? speed : -speed,
               vy: drift,

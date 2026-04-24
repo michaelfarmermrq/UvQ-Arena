@@ -1,15 +1,18 @@
 const FREEZE_COOLDOWN_MS = 3000;
 const MELEE_COOLDOWN_MS  = 250; // right-click melee cooldown
+const VP_W = 1200;              // viewport (canvas visible) width
+const VP_H = 700;
 
 export class InputHandler {
-  constructor(canvas, socket, { onFired, onMelee } = {}) {
+  constructor(canvas, socket, { camera, onFired, onMelee } = {}) {
     this.canvas = canvas;
     this.socket = socket;
+    this.camera = camera || null;   // needed for viewport→world conversion
     this._onFired = onFired || null;
     this._onMelee = onMelee || null;
 
-    // Mouse position in logical canvas coords — used for reticle + fire direction
-    this.mousePos = { x: 600, y: 350 };
+    // Mouse position in viewport (screen) coords — 0..VP_W × 0..VP_H
+    this.mousePos = { x: VP_W / 2, y: VP_H / 2 };
 
     // Boolean key state read by GameClient each frame
     this.keys = { up: false, down: false, left: false, right: false };
@@ -47,18 +50,26 @@ export class InputHandler {
     this.keys.right = false;
   }
 
-  _toLogical(clientX, clientY) {
+  /** Convert a DOM mouse event's (clientX, clientY) to viewport coords (0..VP_W × 0..VP_H). */
+  _toViewport(clientX, clientY) {
     const rect = this.canvas.getBoundingClientRect();
-    const scaleX = 1200 / rect.width;
-    const scaleY = 700  / rect.height;
+    const scaleX = VP_W / rect.width;
+    const scaleY = VP_H / rect.height;
     return {
       x: (clientX - rect.left) * scaleX,
       y: (clientY - rect.top)  * scaleY,
     };
   }
 
+  /** Convert a DOM mouse event to world coords by adding the camera offset. */
+  _toWorld(clientX, clientY) {
+    const vp = this._toViewport(clientX, clientY);
+    if (this.camera) return this.camera.viewportToWorld(vp.x, vp.y);
+    return vp; // fallback (shouldn't happen — camera is always supplied)
+  }
+
   _handleMouseMove(e) {
-    this.mousePos = this._toLogical(e.clientX, e.clientY);
+    this.mousePos = this._toViewport(e.clientX, e.clientY);
   }
 
   _handleClick(e) {
@@ -68,7 +79,7 @@ export class InputHandler {
     this._lastFired = now;
     this._onFired?.();
 
-    const pos = this._toLogical(e.clientX, e.clientY);
+    const pos = this._toWorld(e.clientX, e.clientY);
     this.socket.emit('c2s:fire_freeze', { targetX: pos.x, targetY: pos.y });
   }
 
@@ -79,7 +90,7 @@ export class InputHandler {
     if (now - this._lastMelee < MELEE_COOLDOWN_MS) return;
     this._lastMelee = now;
 
-    const pos = this._toLogical(e.clientX, e.clientY);
+    const pos = this._toWorld(e.clientX, e.clientY);
     this._onMelee?.(pos);
     this.socket.emit('c2s:melee', { targetX: pos.x, targetY: pos.y });
   }

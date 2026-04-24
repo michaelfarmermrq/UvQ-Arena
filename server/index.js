@@ -10,6 +10,11 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: { origin: '*' },
+  // permessage-deflate: compresses WebSocket frames. ~3–5× bandwidth reduction on
+  // snapshot payloads with negligible CPU overhead. Threshold skips tiny messages.
+  perMessageDeflate: {
+    threshold: 1024, // only compress frames ≥ 1 KB (snapshots qualify, small events don't)
+  },
 });
 
 app.use(express.static(path.join(__dirname, '../public')));

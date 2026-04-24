@@ -15,8 +15,8 @@ const FREEZE_COOLDOWN_MS = 3000;
 const FREEZE_SPEED       = 15;    // px per tick for U projectile
 const MIN_PLAYERS_TO_START = 2;
 
-const ARENA_W = 1200;
-const ARENA_H = 700;
+const ARENA_W = 2000;
+const ARENA_H = 1900;
 
 // ─── Pickup constants ─────────────────────────────────────────────────────────
 const PICKUP_COLLECT_R   = 28;   // px — player must be within this to collect
@@ -30,12 +30,12 @@ const MINE_AOE_R       = 80;  // px — AOE blast radius
 const MINE_SAFE_SPAWN_R = 120; // px — minimum distance from any player at spawn
 
 // Mines placed at start of each wave (index = waveNum - 1)
-const MINES_PER_WAVE = [0, 16, 24, 32]; // progressive mine count per wave
+const MINES_PER_WAVE = [0, 48, 72, 96]; // progressive mine count per wave — tune: 3× for 2000×2000 world
 
 // ─── Solo mode constants ─────────────────────────────────────────────────────
 // Bots spawned at the start of each wave (index = waveNum - 1).
 // Total across all 4 waves = 10.
-const SOLO_BOTS_PER_WAVE = [6, 4, 6, 4];
+const SOLO_BOTS_PER_WAVE = [12, 8, 12, 8]; // tune: 2× for 2000×2000 world
 
 // Survive all 4 waves (each 60 s, 1200 ticks) to win.
 const SOLO_WIN_TICKS = 4800; // 4 × 1200 ticks = 240 s
@@ -622,9 +622,14 @@ class GameSession {
     }
 
     // First tick after grace ends — spawn Wave 1 pickups now
+    // tune: 4 shield + 4 speed for 2000×2000 world (was 2 + 2)
     if (this.roundElapsedTicks === ROUND_START_GRACE_TICKS) {
       this._spawnPickup('shield');
       this._spawnPickup('shield');
+      this._spawnPickup('shield');
+      this._spawnPickup('shield');
+      this._spawnPickup('speed');
+      this._spawnPickup('speed');
       this._spawnPickup('speed');
       this._spawnPickup('speed');
     }
@@ -648,9 +653,14 @@ class GameSession {
     }
 
     // 8a. Spawn pickups when a between-wave countdown finishes
+    // tune: 4 shield + 4 speed for 2000×2000 world (was 2 + 2)
     if (this.boss.didCountdownEnd()) {
       this._spawnPickup('shield');
       this._spawnPickup('shield');
+      this._spawnPickup('shield');
+      this._spawnPickup('shield');
+      this._spawnPickup('speed');
+      this._spawnPickup('speed');
       this._spawnPickup('speed');
       this._spawnPickup('speed');
     }

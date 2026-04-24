@@ -2,11 +2,14 @@ import { Renderer } from './Renderer.js';
 import { PlayerInterpolator } from './Interpolation.js';
 import { InputHandler } from './InputHandler.js';
 import { HUD } from './HUD.js';
+import { Camera } from './Camera.js';
 
 const PLAYER_SPEED     = 0.209; // px/ms  →  209 px/s (~5% slower than original 220)
 const MOVE_THROTTLE_MS = 20;   // max rate to emit c2s:move (50 Hz)
-const ARENA_W = 1200;
-const ARENA_H = 700;
+const ARENA_W = 2000;          // world size — must match server/GameSession.js
+const ARENA_H = 1900;
+const VP_W    = 1200;          // viewport size — canvas visible area
+const VP_H    = 700;
 const INV_SQRT2 = 0.7071067811865476; // 1/√2 for diagonal normalisation
 // Boss Q is rendered at 144px — collision radius ≈ half glyph height + player radius
 const BOSS_COLLIDE_R = 80; // combined boss + player exclusion radius (px)
@@ -20,7 +23,9 @@ export class GameClient {
     this.renderer = new Renderer(canvas);
     this.interpolator = new PlayerInterpolator();
     this.hud = new HUD();
+    this.camera = new Camera({ vpW: VP_W, vpH: VP_H, worldW: ARENA_W, worldH: ARENA_H });
     this.input = new InputHandler(canvas, socket, {
+      camera: this.camera,
       onFired: () => this.hud.onFreezeFired(),
       onMelee: (targetPos) => this._startMeleeAnim(targetPos),
     });
@@ -48,6 +53,7 @@ export class GameClient {
     this._lastMoveSent = 0;
     this._spectator = false;
     this._running = true;
+    this._cameraSnapped = false;
     this.input.attach();
     this._loop();
   }
@@ -60,6 +66,7 @@ export class GameClient {
     this._lastMoveSent = 0;
     this._spectator = true;
     this._running = true;
+    this._cameraSnapped = false;
     // Don't attach input — spectators don't move or fire
     if (!this._rafId) this._loop();
   }
@@ -86,6 +93,7 @@ export class GameClient {
     this._lastMoveSent = 0;
     this._spectator = false;
     this._running = true;
+    this._cameraSnapped = false;
     this.input.attach();
     if (!this._rafId) this._loop();
   }
@@ -234,6 +242,23 @@ export class GameClient {
 
     if (!this._spectator) this._updateLocalPosition(dt, now);
 
+    // Drive camera: follow the local player in-play; fall back to boss center otherwise.
+    let camTargetX = this._localPos.x;
+    let camTargetY = this._localPos.y;
+    if (this._spectator) {
+      const boss = this._snapshot?.boss;
+      camTargetX = boss?.x ?? ARENA_W / 2;
+      camTargetY = boss?.y ?? ARENA_H / 2;
+    }
+    this.camera.follow(camTargetX, camTargetY);
+    // Snap once the player is seeded so the camera doesn't lerp from (0,0) on spawn.
+    if (!this._cameraSnapped && (this._localPosSeeded || this._spectator)) {
+      this.camera.snap();
+      this._cameraSnapped = true;
+    } else {
+      this.camera.tick();
+    }
+
     this.renderer.drawFrame({
       snapshot: this._snapshot,
       localPlayerId: this.localPlayerId,
@@ -247,6 +272,7 @@ export class GameClient {
       mineBlasts: this._mineBlasts,
       meleeAnim: this._meleeAnim,
       hitFlashes: this._hitFlashes,
+      camera: this.camera,
     });
   }
 }

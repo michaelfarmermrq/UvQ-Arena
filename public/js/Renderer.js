@@ -1,7 +1,9 @@
 import { extrapolateProjectile } from './Interpolation.js';
 
-const ARENA_W = 1200;
-const ARENA_H = 700;
+const ARENA_W = 2000;   // world size — must match server/GameSession.js
+const ARENA_H = 1900;
+const VP_W    = 1200;   // viewport (canvas visible area)
+const VP_H    = 700;
 
 // Player glyph size in px
 const PLAYER_SIZE = 32;
@@ -40,18 +42,26 @@ export class Renderer {
     mineBlasts,
     meleeAnim,
     hitFlashes,
+    camera,
   }) {
     const ctx = this.ctx;
     const msSince = now - snapshotTime;
 
-    // 1. Background
+    // 1. Clear viewport (screen space — cheap fill of visible area only)
     ctx.fillStyle = '#0d0d1a';
-    ctx.fillRect(0, 0, ARENA_W, ARENA_H);
+    ctx.fillRect(0, 0, VP_W, VP_H);
+
+    // ── WORLD-SPACE pass: translated by -camera ──
+    ctx.save();
+    if (camera) ctx.translate(-camera.x, -camera.y);
 
     // 2. Arena border glow
     this._drawArenaBorder(ctx);
 
-    if (!snapshot) return;
+    if (!snapshot) {
+      ctx.restore();
+      return;
+    }
 
     // 3. Q Boss
     if (snapshot.boss?.visible) {
@@ -109,27 +119,7 @@ export class Renderer {
       this._drawPlayer(ctx, pos.x, pos.y, localPlayer, true, elimAnimations, now, hitFlashes);
     }
 
-    // 8. HUD
-    if (hud && localPlayer) {
-      hud.draw(ctx, localPlayer, snapshot.players, now, snapshot);
-    }
-
-    // 9. Between-wave pause overlay (powering up message, no countdown)
-    if (snapshot.boss?.wavePausing) {
-      this._drawWavePause(ctx, snapshot.wave, snapshot.eliminatedCount ?? 0);
-    }
-
-    // 9b. Between-wave countdown (after powering up finishes)
-    if (snapshot.boss?.waveCountdown > 0) {
-      this._drawCountdown(ctx, snapshot.boss.waveCountdown);
-    }
-
-    // 10. Grace-period countdown — only show final 3 s so it doesn't overlap wave text
-    if (snapshot.graceRemaining > 0 && snapshot.graceRemaining <= 3) {
-      this._drawCountdown(ctx, snapshot.graceRemaining);
-    }
-
-    // 10. Melee thrust animation (drawn above players, below reticle)
+    // 10. Melee thrust animation (world-space — follows the player)
     if (meleeAnim && localPlayer?.alive) {
       const age = now - meleeAnim.startTime;
       if (age < 250) {
@@ -138,7 +128,30 @@ export class Renderer {
       }
     }
 
-    // 11. Aim reticle (drawn last, on top of everything)
+    ctx.restore();
+    // ── End world-space pass ──
+
+    // 8. HUD (screen-space)
+    if (hud && localPlayer) {
+      hud.draw(ctx, localPlayer, snapshot.players, now, snapshot);
+    }
+
+    // 9. Between-wave pause overlay — screen-space so it's always viewport-centered
+    if (snapshot.boss?.wavePausing) {
+      this._drawWavePause(ctx, snapshot.wave, snapshot.eliminatedCount ?? 0);
+    }
+
+    // 9b. Between-wave countdown
+    if (snapshot.boss?.waveCountdown > 0) {
+      this._drawCountdown(ctx, snapshot.boss.waveCountdown);
+    }
+
+    // 10. Grace-period countdown
+    if (snapshot.graceRemaining > 0 && snapshot.graceRemaining <= 3) {
+      this._drawCountdown(ctx, snapshot.graceRemaining);
+    }
+
+    // 11. Aim reticle — screen-space at the cursor's viewport position
     if (mousePos && localPlayer?.alive) {
       this._drawReticle(ctx, mousePos.x, mousePos.y);
     }
@@ -146,15 +159,15 @@ export class Renderer {
 
   _drawWavePause(ctx, currentWave, eliminatedCount) {
     ctx.save();
-    // Dim overlay
+    // Dim overlay (full viewport)
     ctx.fillStyle = 'rgba(0,0,0,0.45)';
-    ctx.fillRect(0, 0, ARENA_W, ARENA_H);
+    ctx.fillRect(0, 0, VP_W, VP_H);
 
-    // Info card
+    // Info card (centered in viewport)
     const bw = 340;
     const bh = eliminatedCount > 0 ? 140 : 110;
-    const bx = ARENA_W / 2 - bw / 2;
-    const by = ARENA_H / 2 - bh / 2;
+    const bx = VP_W / 2 - bw / 2;
+    const by = VP_H / 2 - bh / 2;
     ctx.fillStyle = 'rgba(0,0,0,0.8)';
     ctx.beginPath();
     ctx.roundRect(bx, by, bw, bh, 14);
@@ -171,19 +184,19 @@ export class Renderer {
     ctx.fillStyle = '#ff4444';
     ctx.shadowColor = 'rgba(255,68,68,0.6)';
     ctx.shadowBlur = 10;
-    ctx.fillText('Boss Q powering up…', ARENA_W / 2, by + 38);
+    ctx.fillText('Boss Q powering up…', VP_W / 2, by + 38);
 
     // Wave label
     ctx.font = '14px "Courier New", monospace';
     ctx.fillStyle = 'rgba(255,255,255,0.5)';
     ctx.shadowBlur = 0;
-    ctx.fillText(`Wave ${currentWave + 1} incoming`, ARENA_W / 2, by + 68);
+    ctx.fillText(`Wave ${currentWave + 1} incoming`, VP_W / 2, by + 68);
 
     // Eliminated count
     if (eliminatedCount > 0) {
       ctx.font = '13px "Courier New", monospace';
       ctx.fillStyle = 'rgba(255,100,100,0.75)';
-      ctx.fillText(`${eliminatedCount} player${eliminatedCount !== 1 ? 's' : ''} eliminated`, ARENA_W / 2, by + 95);
+      ctx.fillText(`${eliminatedCount} player${eliminatedCount !== 1 ? 's' : ''} eliminated`, VP_W / 2, by + 95);
     }
 
     ctx.restore();
@@ -191,14 +204,14 @@ export class Renderer {
 
   _drawCountdown(ctx, seconds) {
     ctx.save();
-    // Dim overlay
+    // Dim overlay (full viewport)
     ctx.fillStyle = 'rgba(0,0,0,0.35)';
-    ctx.fillRect(0, 0, ARENA_W, ARENA_H);
-    // Dark backdrop box
+    ctx.fillRect(0, 0, VP_W, VP_H);
+    // Dark backdrop box (centered in viewport)
     const bw = 200;
     const bh = 180;
-    const bx = ARENA_W / 2 - bw / 2;
-    const by = ARENA_H / 2 - bh / 2 - 20;
+    const bx = VP_W / 2 - bw / 2;
+    const by = VP_H / 2 - bh / 2 - 20;
     ctx.fillStyle = 'rgba(0,0,0,0.72)';
     ctx.beginPath();
     ctx.roundRect(bx, by, bw, bh, 14);
@@ -208,13 +221,13 @@ export class Renderer {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    ctx.fillText('GET READY', ARENA_W / 2, ARENA_H / 2 - 60);
+    ctx.fillText('GET READY', VP_W / 2, VP_H / 2 - 60);
     // Big number
     ctx.font = 'bold 120px monospace';
     ctx.fillStyle = '#0A2ECB';
     ctx.shadowColor = 'rgba(10,46,203,0.8)';
     ctx.shadowBlur = 40;
-    ctx.fillText(String(seconds), ARENA_W / 2, ARENA_H / 2 + 20);
+    ctx.fillText(String(seconds), VP_W / 2, VP_H / 2 + 20);
     ctx.restore();
   }
 

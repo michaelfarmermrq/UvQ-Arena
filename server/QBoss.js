@@ -17,8 +17,8 @@ const WAVE_COUNTDOWN_TICKS = 60;       // 3s countdown after wave title
 
 class QBoss {
   constructor() {
-    this.x = 600;
-    this.y = 350;
+    this.x = 1000;
+    this.y = 950;
     this.visible = true;
 
     this._currentWaveIndex = 0; // index into WAVE_PATTERNS

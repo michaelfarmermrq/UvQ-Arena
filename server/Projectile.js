@@ -19,7 +19,7 @@ class Projectile {
     this.y += this.vy;
   }
 
-  isOutOfBounds(width = 1200, height = 700) {
+  isOutOfBounds(width = 2000, height = 1900) {
     const margin = 30;
     return (
       this.x < -margin ||
