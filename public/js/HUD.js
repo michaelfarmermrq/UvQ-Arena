@@ -67,7 +67,7 @@ export class HUD {
    * @param {object[]} allPlayers All PlayerState entries
    * @param {number} now          performance.now()
    */
-  draw(ctx, localPlayer, allPlayers, now, snapshot) {
+  draw(ctx, localPlayer, allPlayers, now, snapshot, getPng) {
     const W = 1200;
     const H = 700;
 
@@ -106,7 +106,7 @@ export class HUD {
     // ── Alive player count ─────────────────────────────────────────────────
     const alive = allPlayers.filter((p) => p.alive).length;
     ctx.save();
-    ctx.font = '13px "Courier New", monospace';
+    ctx.font = '600 12px Gilroy, system-ui, sans-serif';
     ctx.textBaseline = 'top';
     ctx.textAlign = 'right';
     ctx.fillStyle = 'rgba(255,255,255,0.55)';
@@ -150,7 +150,7 @@ export class HUD {
     }
 
     // "U" label inside ring
-    ctx.font = 'bold 14px monospace';
+    ctx.font = '800 14px Gilroy, system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = isReady ? '#44aaff' : 'rgba(68,170,255,0.4)';
@@ -162,7 +162,7 @@ export class HUD {
     if (localPlayer.frozen) {
       const remaining = Math.max(0, (this._frozenUntil - now) / 1000).toFixed(1);
       ctx.save();
-      ctx.font = '12px "Courier New", monospace';
+      ctx.font = '700 11px Gilroy, system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'top';
       ctx.fillStyle = '#88ccff';
@@ -175,19 +175,21 @@ export class HUD {
     const shieldFlash  = now < this._shieldFlashUntil;
     if (shieldActive || shieldFlash) {
       const fraction = shieldActive ? (this._shieldUntil - now) / SHIELD_DURATION_MS : 0;
-      this._drawStatusRing(ctx, 90, H - 40, fraction, '#0A2ECB', '🛡', shieldFlash);
+      const img = getPng ? getPng('pickup-shield') : null;
+      this._drawStatusRing(ctx, 90, H - 40, fraction, '#0A2ECB', img, '🛡', shieldFlash);
     }
 
     // ── Speed timer ring ──────────────────────────────────────────────────
     if (now < this._speedUntil) {
       const fraction = (this._speedUntil - now) / SPEED_DURATION_MS;
-      this._drawStatusRing(ctx, 140, H - 40, fraction, '#88ff88', '»', false);
+      const img = getPng ? getPng('pickup-speed') : null;
+      this._drawStatusRing(ctx, 140, H - 40, fraction, '#88ff88', img, '»', false);
     }
 
     // ── Next wave countdown ────────────────────────────────────────────────
     if (snapshot && snapshot.nextWaveIn != null) {
       ctx.save();
-      ctx.font = '13px "Courier New", monospace';
+      ctx.font = '600 12px Gilroy, system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'bottom';
       ctx.fillStyle = 'rgba(255,255,255,0.5)';
@@ -196,7 +198,7 @@ export class HUD {
     }
   }
 
-  _drawStatusRing(ctx, cx, cy, fraction, color, icon, flash) {
+  _drawStatusRing(ctx, cx, cy, fraction, color, iconImg, iconFallback, flash) {
     const r = 18;
     ctx.save();
 
@@ -230,13 +232,21 @@ export class HUD {
       ctx.stroke();
     }
 
-    // Icon
-    ctx.font = 'bold 13px monospace';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.fillStyle = fraction > 0.2 ? color : 'rgba(255,255,255,0.3)';
+    // Icon — prefer the PNG sprite; fall back to text emoji while it loads.
     ctx.shadowBlur = 0;
-    ctx.fillText(icon, cx, cy);
+    if (iconImg) {
+      const s = r * 1.45;
+      const alpha = fraction > 0.2 ? 1 : 0.35;
+      ctx.globalAlpha = alpha;
+      ctx.drawImage(iconImg, cx - s / 2, cy - s / 2, s, s);
+      ctx.globalAlpha = 1;
+    } else {
+      ctx.font = 'bold 13px Gilroy, system-ui, sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = fraction > 0.2 ? color : 'rgba(255,255,255,0.3)';
+      ctx.fillText(iconFallback, cx, cy);
+    }
     ctx.restore();
   }
 }

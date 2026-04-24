@@ -22,6 +22,9 @@ export class Renderer {
     this._loadPng('pickup-shield', '/assets/png/shield-pickup.2x.png');
     this._loadPng('pickup-speed',  '/assets/png/turbo-pickup.2x.png');
     this._loadPng('arena-bg',      '/assets/png/arena-bg.2x.png');
+    this._loadPng('countdown-1',   '/assets/png/countdown-1.2x.png');
+    this._loadPng('countdown-2',   '/assets/png/countdown-2.2x.png');
+    this._loadPng('countdown-3',   '/assets/png/countdown-3.2x.png');
   }
 
   _loadPng(key, src) {
@@ -156,7 +159,7 @@ export class Renderer {
 
     // 8. HUD (screen-space)
     if (hud && localPlayer) {
-      hud.draw(ctx, localPlayer, snapshot.players, now, snapshot);
+      hud.draw(ctx, localPlayer, snapshot.players, now, snapshot, (k) => this._getPng(k));
     }
 
     // 9. Between-wave pause overlay — screen-space so it's always viewport-centered
@@ -203,21 +206,21 @@ export class Renderer {
     ctx.textBaseline = 'middle';
 
     // Title
-    ctx.font = 'bold 22px "Courier New", monospace';
+    ctx.font = '700 24px "Formula Condensed", Gilroy, sans-serif';
     ctx.fillStyle = '#ff4444';
     ctx.shadowColor = 'rgba(255,68,68,0.6)';
     ctx.shadowBlur = 10;
-    ctx.fillText('Boss Q powering up…', VP_W / 2, by + 38);
+    ctx.fillText('BOSS Q POWERING UP…', VP_W / 2, by + 38);
 
     // Wave label
-    ctx.font = '14px "Courier New", monospace';
-    ctx.fillStyle = 'rgba(255,255,255,0.5)';
+    ctx.font = '600 14px Gilroy, system-ui, sans-serif';
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
     ctx.shadowBlur = 0;
     ctx.fillText(`Wave ${currentWave + 1} incoming`, VP_W / 2, by + 68);
 
     // Eliminated count
     if (eliminatedCount > 0) {
-      ctx.font = '13px "Courier New", monospace';
+      ctx.font = '500 13px Gilroy, system-ui, sans-serif';
       ctx.fillStyle = 'rgba(255,100,100,0.75)';
       ctx.fillText(`${eliminatedCount} player${eliminatedCount !== 1 ? 's' : ''} eliminated`, VP_W / 2, by + 95);
     }
@@ -228,29 +231,30 @@ export class Renderer {
   _drawCountdown(ctx, seconds) {
     ctx.save();
     // Dim overlay (full viewport)
-    ctx.fillStyle = 'rgba(0,0,0,0.35)';
+    ctx.fillStyle = 'rgba(0,0,0,0.4)';
     ctx.fillRect(0, 0, VP_W, VP_H);
-    // Dark backdrop box (centered in viewport)
-    const bw = 200;
-    const bh = 180;
-    const bx = VP_W / 2 - bw / 2;
-    const by = VP_H / 2 - bh / 2 - 20;
-    ctx.fillStyle = 'rgba(0,0,0,0.72)';
-    ctx.beginPath();
-    ctx.roundRect(bx, by, bw, bh, 14);
-    ctx.fill();
-    // "Get ready" label
-    ctx.font = '18px "Courier New", monospace';
+
+    // "GET READY" label above the countdown
+    ctx.font = '700 20px Gilroy, system-ui, sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    ctx.fillText('GET READY', VP_W / 2, VP_H / 2 - 60);
-    // Big number
-    ctx.font = 'bold 120px monospace';
-    ctx.fillStyle = '#0A2ECB';
-    ctx.shadowColor = 'rgba(10,46,203,0.8)';
-    ctx.shadowBlur = 40;
-    ctx.fillText(String(seconds), VP_W / 2, VP_H / 2 + 20);
+    ctx.fillStyle = 'rgba(255,255,255,0.65)';
+    ctx.letterSpacing = '0.3em';
+    ctx.fillText('GET READY', VP_W / 2, VP_H / 2 - 110);
+
+    // Countdown number — use PNG if loaded, else fall back to procedural text
+    const png = this._getPng(`countdown-${seconds}`);
+    if (png) {
+      // PNGs are @2x (source); draw at ~220px on canvas for a commanding presence
+      const size = 240;
+      ctx.drawImage(png, VP_W / 2 - size / 2, VP_H / 2 - size / 2 + 10, size, size);
+    } else {
+      ctx.font = '700 160px "Formula Condensed", Gilroy, sans-serif';
+      ctx.fillStyle = '#0A2ECB';
+      ctx.shadowColor = 'rgba(10,46,203,0.8)';
+      ctx.shadowBlur = 40;
+      ctx.fillText(String(seconds), VP_W / 2, VP_H / 2 + 20);
+    }
     ctx.restore();
   }
 
@@ -459,18 +463,21 @@ export class Renderer {
         curY -= 14;
       }
 
-      const icons = [];
-      if (player.shielded) icons.push({ icon: '🛡', color: '#4488ff' });
-      if (player.speeding) icons.push({ icon: '»', color: '#88ff88' });
-
-      if (icons.length > 0) {
-        ctx.font = '14px monospace';
-        ctx.textBaseline = 'bottom';
-        const spacing = 18;
-        const startX = x - ((icons.length - 1) * spacing) / 2;
-        for (let i = 0; i < icons.length; i++) {
-          ctx.fillStyle = icons[i].color;
-          ctx.fillText(icons[i].icon, startX + i * spacing, curY);
+      // Active pickup icons above the player — use the actual pickup sprites
+      // rather than emoji so they match the in-game look.
+      const activePickups = [];
+      if (player.shielded) activePickups.push(this._getPng('pickup-shield'));
+      if (player.speeding) activePickups.push(this._getPng('pickup-speed'));
+      if (activePickups.length > 0) {
+        const iconSize = 22;
+        const spacing = 26;
+        const startX = x - ((activePickups.length - 1) * spacing) / 2;
+        const iconY = curY - iconSize; // above the "You" label
+        for (let i = 0; i < activePickups.length; i++) {
+          const img = activePickups[i];
+          if (img) {
+            ctx.drawImage(img, startX + i * spacing - iconSize / 2, iconY, iconSize, iconSize);
+          }
         }
       }
     }

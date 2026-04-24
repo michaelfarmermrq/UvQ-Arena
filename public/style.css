@@ -30,8 +30,24 @@ html, body {
 /* ── Lobby ────────────────────────────────────────────────────────────── */
 #screen-lobby {
   background:
-    radial-gradient(ellipse at 50% 30%, rgba(10,46,203,0.15) 0%, transparent 55%),
+    radial-gradient(ellipse at 50% 30%, rgba(10,46,203,0.22) 0%, transparent 55%),
+    url('/assets/png/start-screen.2x.png') center center / cover no-repeat,
     var(--uvq-ink-deep, #05060c);
+}
+
+/* Tint overlay over the splash so the card + text stay readable */
+#screen-lobby::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(5,6,12,0.55) 0%, rgba(5,6,12,0.72) 100%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+#screen-lobby > * {
+  position: relative;
+  z-index: 1;
 }
 
 .lobby-box {
@@ -309,27 +325,43 @@ html, body {
 }
 
 /* ── Round over ───────────────────────────────────────────────────────── */
+#screen-round-over {
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(10,46,203,0.18) 0%, transparent 55%),
+    var(--uvq-ink-deep, #05060c);
+}
+
 .round-over-box {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 16px;
+  gap: 14px;
   text-align: center;
-  padding: 48px 64px;
-  background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 16px;
+  padding: 56px 72px;
+  background: rgba(14, 17, 32, 0.9);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--uvq-radius-xl, 16px);
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  backdrop-filter: blur(10px);
+  min-width: 360px;
 }
 
 #round-over-title {
-  font-size: 40px;
-  font-weight: 900;
-  color: #0A2ECB;
+  font-family: var(--uvq-font-display, 'Formula Condensed', sans-serif);
+  font-size: 72px;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  line-height: 0.95;
+  color: var(--uvq-brand-blue-500, #0a2ecb);
+  text-shadow: 0 0 32px rgba(10,46,203,0.5);
 }
 
 #round-over-sub {
-  color: #888;
+  font-family: var(--uvq-font-body, 'Gilroy', sans-serif);
   font-size: 14px;
+  font-weight: 500;
+  color: var(--uvq-neutral-400, #999ba1);
+  letter-spacing: 0.02em;
 }
 
 .player-not-ready-badge {
