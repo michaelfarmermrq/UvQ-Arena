@@ -1,15 +1,18 @@
 import { extrapolateProjectile } from './Interpolation.js';
+import { getSprite } from './SpriteCache.js';
 
 const ARENA_W = 2000;   // world size — must match server/GameSession.js
 const ARENA_H = 1900;
 const VP_W    = 1200;   // viewport (canvas visible area)
 const VP_H    = 700;
 
-// Player glyph size in px
-const PLAYER_SIZE = 32;
-const BOSS_SIZE   = 144;
-const Q_PROJ_SIZE = 14;
-const U_PROJ_SIZE = 13;
+// On-canvas draw sizes (sprites are rendered at these widths/heights)
+const PLAYER_SIZE = 56;   // U sprite — slightly larger than the old text glyph
+const BOSS_SIZE   = 220;  // Q boss sprite
+const Q_PROJ_SIZE = 28;   // Q projectile / mine
+const U_PROJ_SIZE = 28;   // U freeze projectile
+// Legacy glyph fallback size (used while sprites are still loading)
+const PLAYER_GLYPH_SIZE = 32;
 
 export class Renderer {
   constructor(canvas) {
@@ -261,6 +264,12 @@ export class Renderer {
   }
 
   _drawMine(ctx, x, y) {
+    const sprite = getSprite('q-mine');
+    if (sprite) {
+      const s = Q_PROJ_SIZE;
+      ctx.drawImage(sprite, x - s / 2, y - s / 2, s, s);
+      return;
+    }
     this._drawQProjectile(ctx, x, y);
   }
 
@@ -298,8 +307,15 @@ export class Renderer {
   }
 
   _drawBoss(ctx, boss) {
+    const sprite = getSprite('q-boss');
+    if (sprite) {
+      const s = BOSS_SIZE;
+      ctx.drawImage(sprite, boss.x - s / 2, boss.y - s / 2, s, s);
+      return;
+    }
+    // Fallback while sprite loads
     ctx.save();
-    ctx.font = `bold ${BOSS_SIZE}px monospace`;
+    ctx.font = `bold 144px monospace`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#ff3333';
@@ -310,8 +326,15 @@ export class Renderer {
   }
 
   _drawQProjectile(ctx, x, y) {
+    const sprite = getSprite('projectile-q');
+    if (sprite) {
+      const s = Q_PROJ_SIZE;
+      ctx.drawImage(sprite, x - s / 2, y - s / 2, s, s);
+      return;
+    }
+    // Fallback
     ctx.save();
-    ctx.font = `bold ${Q_PROJ_SIZE}px monospace`;
+    ctx.font = `bold 14px monospace`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#ff4444';
@@ -322,8 +345,15 @@ export class Renderer {
   }
 
   _drawUProjectile(ctx, x, y) {
+    const sprite = getSprite('projectile-u');
+    if (sprite) {
+      const s = U_PROJ_SIZE;
+      ctx.drawImage(sprite, x - s / 2, y - s / 2, s, s);
+      return;
+    }
+    // Fallback
     ctx.save();
-    ctx.font = `bold ${U_PROJ_SIZE}px monospace`;
+    ctx.font = `bold 13px monospace`;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillStyle = '#44aaff';
@@ -336,33 +366,27 @@ export class Renderer {
   _drawPlayer(ctx, x, y, player, isLocal, elimAnimations, now, hitFlashes) {
     ctx.save();
 
+    // Determine visual state and size
     let size = PLAYER_SIZE;
-    let color = player.color;
     let alpha = 1;
+    let state = 'normal';
+    if (hitFlashes && hitFlashes.has(player.id))  state = 'hit';
+    else if (player.frozen)                       state = 'frozen';
 
-    // Elimination animation
     const elim = elimAnimations.get(player.id);
     if (elim) {
       const progress = Math.min(1, (now - elim.startTime) / 500);
       size = PLAYER_SIZE + (PLAYER_SIZE * 1.5 * progress); // grow to 2.5×
-      color = `rgba(255, ${Math.round(80 * (1 - progress))}, ${Math.round(80 * (1 - progress))}, ${1 - progress * 0.3})`;
       alpha = 1 - progress * 0.3;
-    } else if (hitFlashes && hitFlashes.has(player.id)) {
-      color = '#ff3333';
-      ctx.shadowColor = 'rgba(255,50,50,0.9)';
-      ctx.shadowBlur = 18;
-    } else if (player.frozen) {
-      color = '#88ccff';
-      ctx.shadowColor = 'rgba(68,170,255,0.9)';
-      ctx.shadowBlur = 16;
+      state = 'hit'; // elim uses the red palette
     }
 
     ctx.globalAlpha = alpha;
 
-    // Shield bubble (drawn before player glyph)
+    // Shield bubble (drawn before player sprite)
     if (player.shielded && !elim) {
       ctx.beginPath();
-      ctx.arc(x, y, PLAYER_SIZE * 0.75, 0, Math.PI * 2);
+      ctx.arc(x, y, PLAYER_SIZE * 0.58, 0, Math.PI * 2);
       ctx.strokeStyle = 'rgba(10,46,203,0.85)';
       ctx.lineWidth = 2.5;
       ctx.shadowColor = 'rgba(10,46,203,0.7)';
@@ -371,41 +395,49 @@ export class Renderer {
       ctx.shadowBlur = 0;
     }
 
-    ctx.font = `bold ${size}px monospace`;
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-
-    // Local player: white outline stroke
+    // Local-player halo — soft white ring behind the sprite
     if (isLocal && !elim) {
-      ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+      ctx.beginPath();
+      ctx.arc(x, y + size * 0.08, size * 0.48, 0, Math.PI * 2);
+      ctx.strokeStyle = 'rgba(255,255,255,0.55)';
       ctx.lineWidth = 1.5;
-      ctx.strokeText('U', x, y);
+      ctx.stroke();
     }
 
-    ctx.fillStyle = color;
-    if (!player.frozen) {
+    // Player sprite (rasterized from u-hero.svg with per-color CSS vars)
+    const sprite = getSprite('u-hero', player.color, state);
+    if (sprite) {
+      ctx.drawImage(sprite, x - size / 2, y - size / 2, size, size);
+    } else {
+      // Fallback to legacy glyph while sprite loads
+      let color = player.color;
+      if (state === 'frozen') color = '#88ccff';
+      else if (state === 'hit') color = '#ff3333';
+      ctx.font = `bold ${PLAYER_GLYPH_SIZE}px monospace`;
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillStyle = color;
       ctx.shadowColor = color + '88';
       ctx.shadowBlur = 10;
+      ctx.fillText('U', x, y);
+      ctx.shadowBlur = 0;
     }
-    ctx.fillText('U', x, y);
 
     // Labels above player: "You" closest, then status icons above that
     if (!elim) {
       ctx.shadowBlur = 0;
       ctx.textAlign = 'center';
 
-      let curY = y - 30; // above the shield bubble (radius 24px)
+      let curY = y - size * 0.55;
 
-      // "You" label (drawn first, closest to player)
       if (isLocal) {
-        ctx.font = '10px "Courier New", monospace';
+        ctx.font = '600 11px Gilroy, system-ui, sans-serif';
         ctx.textBaseline = 'bottom';
-        ctx.fillStyle = 'rgba(255,255,255,0.7)';
+        ctx.fillStyle = 'rgba(255,255,255,0.75)';
         ctx.fillText('You', x, curY);
         curY -= 14;
       }
 
-      // Status icons above the "You" label
       const icons = [];
       if (player.shielded) icons.push({ icon: '🛡', color: '#4488ff' });
       if (player.speeding) icons.push({ icon: '»', color: '#88ff88' });

@@ -3,6 +3,11 @@ import { PlayerInterpolator } from './Interpolation.js';
 import { InputHandler } from './InputHandler.js';
 import { HUD } from './HUD.js';
 import { Camera } from './Camera.js';
+import { preloadSvgTemplates } from './SpriteCache.js';
+
+// Kick off sprite template preloading at module import time — by the time
+// the first game frame draws, the common sprites should be ready.
+preloadSvgTemplates().catch(() => {});
 
 const PLAYER_SPEED     = 0.209; // px/ms  →  209 px/s (~5% slower than original 220)
 const MOVE_THROTTLE_MS = 20;   // max rate to emit c2s:move (50 Hz)
