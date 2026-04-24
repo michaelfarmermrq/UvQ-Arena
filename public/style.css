@@ -426,7 +426,8 @@ html, body {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.7);
+  background: rgba(5,6,12,0.78);
+  backdrop-filter: blur(6px);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -439,26 +440,30 @@ html, body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 24px;
-  padding: 40px 48px;
-  background: #12122a;
-  border: 1px solid rgba(255,255,255,0.12);
-  border-radius: 16px;
-  max-width: 420px;
+  gap: 22px;
+  padding: 44px 52px;
+  background: rgba(14, 17, 32, 0.96);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: var(--uvq-radius-xl, 16px);
+  max-width: 460px;
   width: 90%;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.45);
 }
 
 .modal-title {
-  font-size: 28px;
-  font-weight: 900;
-  color: #0A2ECB;
-  letter-spacing: -0.5px;
+  font-family: var(--uvq-font-display, 'Formula Condensed', sans-serif);
+  font-size: 44px;
+  font-weight: 700;
+  color: var(--uvq-brand-blue-500, #0a2ecb);
+  text-shadow: 0 0 24px rgba(10,46,203,0.4);
+  letter-spacing: 0.01em;
+  line-height: 1;
 }
 
 .instructions-grid {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
   width: 100%;
 }
 
@@ -466,71 +471,95 @@ html, body {
   display: flex;
   align-items: center;
   gap: 14px;
-  padding: 8px 12px;
-  background: rgba(255,255,255,0.04);
-  border-radius: 8px;
+  padding: 10px 14px;
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: var(--uvq-radius-md, 8px);
 }
 
 .instruction-key {
-  font-size: 13px;
-  font-weight: bold;
+  font-family: var(--uvq-font-body, 'Gilroy', sans-serif);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
   color: #fff;
-  background: rgba(255,255,255,0.1);
-  border: 1px solid rgba(255,255,255,0.2);
-  border-radius: 5px;
-  padding: 4px 10px;
-  min-width: 90px;
+  background: rgba(255,255,255,0.08);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: var(--uvq-radius-sm, 4px);
+  padding: 5px 10px;
+  min-width: 96px;
   text-align: center;
 }
 
 .instruction-desc {
+  font-family: var(--uvq-font-body, 'Gilroy', sans-serif);
   font-size: 14px;
-  color: rgba(255,255,255,0.7);
+  font-weight: 500;
+  color: var(--uvq-neutral-200, #cccdd0);
+  line-height: 1.4;
 }
 
 .instructions-rules {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  width: 100%;
+  padding: 14px 16px;
+  background: rgba(255,255,255,0.025);
+  border-radius: var(--uvq-radius-md, 8px);
+}
+
+.instructions-rules p {
+  font-family: var(--uvq-font-body, 'Gilroy', sans-serif);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--uvq-neutral-400, #999ba1);
+  line-height: 1.55;
+}
+
+.text-red   { color: var(--uvq-danger-500, #d50000); font-weight: 700; }
+.text-blue  { color: var(--uvq-brand-blue-500, #0a2ecb); font-weight: 700; }
+.text-green { color: #4af9a0; font-weight: 700; }
+.text-cyan  { color: var(--uvq-brand-cyan-500, #00b3ff); font-weight: 700; }
+
+/* ── Pickups section in modal ──────────────────────────────────────── */
+.instructions-pickups {
   display: flex;
   flex-direction: column;
   gap: 8px;
   width: 100%;
 }
 
-.instructions-rules p {
-  font-size: 13px;
-  color: rgba(255,255,255,0.55);
-  line-height: 1.5;
-}
-
-.text-red { color: #ff4444; }
-.text-blue { color: #0A2ECB; }
-.text-green { color: #88ff88; }
-.text-cyan { color: #44aaff; }
-
-/* ── Pickups section in modal ──────────────────────────────────────── */
-.instructions-pickups {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  width: 100%;
-}
-
 .pickups-title {
-  font-size: 14px;
-  font-weight: bold;
-  color: rgba(255,255,255,0.5);
+  font-family: var(--uvq-font-body, 'Gilroy', sans-serif);
+  font-size: 11px;
+  font-weight: 800;
+  color: var(--uvq-neutral-500, #808289);
   text-transform: uppercase;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.1em;
+  margin-top: 4px;
 }
 
 .pickup-row {
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 6px 12px;
-  background: rgba(255,255,255,0.04);
-  border-radius: 8px;
+  padding: 8px 12px;
+  background: rgba(255,255,255,0.035);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: var(--uvq-radius-md, 8px);
+  font-family: var(--uvq-font-body, 'Gilroy', sans-serif);
 }
 
+/* Pickup thumbnails — <img> tags loaded from /assets/png/ */
+.pickup-thumb {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+}
+
+/* Legacy procedural icon — kept as a fallback for any row that doesn't
+   use .pickup-thumb. */
 .pickup-icon {
   width: 30px;
   height: 30px;
