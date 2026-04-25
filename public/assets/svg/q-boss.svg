@@ -13,13 +13,40 @@
       <stop offset="100%" stop-color="var(--uvq-q-glow, #ff0033)" stop-opacity="0"></stop>
     </radialGradient>
   </defs>
+
   <circle cx="110" cy="110" r="105" fill="url(#q-aura)"></circle>
+
+  
   <circle cx="105" cy="100" r="64" fill="none" stroke="url(#q-body)" stroke-width="28"></circle>
   <path d="M 135 140 L 180 195" stroke="url(#q-body)" stroke-width="22" stroke-linecap="round"></path>
   <rect x="167" y="188" width="30" height="8" rx="3" fill="var(--uvq-q-shade, #85070d)" transform="rotate(40 182 192)"></rect>
-  <path d="M 78 90 L 98 96 L 96 104 L 76 98 Z" fill="#fff"></path>
-  <path d="M 118 96 L 138 90 L 140 98 L 120 104 Z" fill="#fff"></path>
-  <circle cx="90" cy="97" r="3.5" fill="#0e1120"></circle>
-  <circle cx="128" cy="97" r="3.5" fill="#0e1120"></circle>
-  <path d="M 88 120 Q 108 110 128 120" stroke="#0e1120" stroke-width="4" stroke-linecap="round" fill="none"></path>
+
+  
+  <g transform="rotate(-8 105 50)">
+    <ellipse cx="105" cy="52" rx="44" ry="6" fill="#0e1120"></ellipse>
+    <ellipse cx="105" cy="51" rx="44" ry="5" fill="#1a1d2e"></ellipse>
+    <rect x="78" y="14" width="54" height="38" rx="2" fill="#0e1120"></rect>
+    <rect x="78" y="14" width="54" height="38" rx="2" fill="none" stroke="#2a2d40" stroke-width="1"></rect>
+    <rect x="78" y="42" width="54" height="6" fill="var(--uvq-q-body, #d50000)"></rect>
+    <rect x="78" y="42" width="54" height="6" fill="none" stroke="var(--uvq-q-shade, #85070d)" stroke-width="0.8"></rect>
+    <rect x="84" y="18" width="3" height="22" rx="1.5" fill="#3a3d55" opacity="0.7"></rect>
+  </g>
+
+  
+  <ellipse cx="88" cy="98" rx="9" ry="6" fill="#fff"></ellipse>
+  <ellipse cx="122" cy="98" rx="9" ry="6" fill="#fff"></ellipse>
+  <path d="M 78 96 Q 88 92 97 97 L 97 92 Q 88 86 78 92 Z" fill="#0e1120"></path>
+  <path d="M 112 97 Q 122 92 132 96 L 132 92 Q 122 86 112 92 Z" fill="#0e1120"></path>
+  <circle cx="92" cy="99" r="3.2" fill="#0e1120"></circle>
+  <circle cx="126" cy="99" r="3.2" fill="#0e1120"></circle>
+  <path d="M 78 86 Q 88 82 97 86" stroke="#0e1120" stroke-width="2.2" fill="none" stroke-linecap="round"></path>
+  <path d="M 112 86 Q 122 82 132 86" stroke="#0e1120" stroke-width="2.2" fill="none" stroke-linecap="round"></path>
+
+  
+  <path d="M 108 122 C 100 124, 90 124, 82 122 C 74 120, 70 116, 72 112 C 74 116, 80 117, 84 116 C 80 119, 78 122, 82 124 C 86 122, 92 122, 96 124 C 100 125, 104 125, 108 122 Z" fill="#0e1120"></path>
+  <path d="M 108 122 C 116 124, 126 124, 134 122 C 142 120, 146 116, 144 112 C 142 116, 136 117, 132 116 C 136 119, 138 122, 134 124 C 130 122, 124 122, 120 124 C 116 125, 112 125, 108 122 Z" fill="#0e1120"></path>
+  <path d="M 104 121 Q 108 124 112 121" stroke="#0e1120" stroke-width="2" fill="none" stroke-linecap="round"></path>
+
+  
+  <path d="M 100 130 Q 108 134 116 130" stroke="#0e1120" stroke-width="2.5" stroke-linecap="round" fill="none"></path>
 </svg>
