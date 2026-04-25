@@ -16,24 +16,9 @@
       <feMerge><feMergeNode in="b"></feMergeNode><feMergeNode in="SourceGraphic"></feMergeNode></feMerge>
     </filter>
   </defs>
-
   <ellipse cx="100" cy="188" rx="52" ry="8" fill="#000" opacity="0.35"></ellipse>
-
   <g filter="url(#u-glow)">
     <path d="M 36 26 L 36 118 C 36 155, 64 178, 100 178 C 136 178, 164 155, 164 118 L 164 26 L 128 26 L 128 118 C 128 134, 116 144, 100 144 C 84 144, 72 134, 72 118 L 72 26 Z" fill="url(#u-body)" stroke="var(--uvq-u-pink-shade, #7a0076)" stroke-width="3" stroke-linejoin="round"></path>
     <path d="M 44 34 L 44 115 C 44 128, 52 136, 62 138 L 62 34 Z" fill="url(#u-shine)" opacity="0.85"></path>
-
-    
-    <ellipse cx="100" cy="112" rx="30" ry="24" fill="#ffffff" opacity="0.95"></ellipse>
-    <ellipse cx="100" cy="112" rx="30" ry="24" fill="none" stroke="var(--uvq-u-pink-shade, #7a0076)" stroke-width="2.5" opacity="0.5"></ellipse>
-
-    
-    <ellipse cx="88" cy="108" rx="6.5" ry="9" fill="#0e1120"></ellipse>
-    <ellipse cx="112" cy="108" rx="6.5" ry="9" fill="#0e1120"></ellipse>
-    <ellipse cx="90" cy="104" rx="2.2" ry="3" fill="#fff"></ellipse>
-    <ellipse cx="114" cy="104" rx="2.2" ry="3" fill="#fff"></ellipse>
-
-    
-    <path d="M 86 124 Q 100 136 114 124" stroke="#0e1120" stroke-width="4.5" stroke-linecap="round" fill="none"></path>
   </g>
 </svg>
