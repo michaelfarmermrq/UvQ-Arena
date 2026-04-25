@@ -5,7 +5,20 @@
       "Read(//usr/**)",
       "Bash(/dev/null -name npm -type f)",
       "Read(//opt/homebrew/**)",
-      "Bash(/dev/null -name node -type f)"
+      "Bash(/dev/null -name node -type f)",
+      "Bash(cp -r /Users/michaelf/Downloads/export/svg /Users/michaelf/Documents/Claude/Code/UvQ/public/assets)",
+      "Bash(cp -r /Users/michaelf/Downloads/export/png /Users/michaelf/Documents/Claude/Code/UvQ/public/assets/png)",
+      "Bash(cp -r /Users/michaelf/Downloads/export/fonts /Users/michaelf/Documents/Claude/Code/UvQ/public/assets/fonts)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Read(//private/tmp/uvq5/export/svg/**)",
+      "Bash(cp /tmp/uvq5/export/svg/projectile-u.svg /Users/michaelf/Documents/Claude/Code/UvQ/public/assets/svg/projectile-u.svg)",
+      "Bash(cp /tmp/uvq5/export/svg/u-projectile.svg /Users/michaelf/Documents/Claude/Code/UvQ/public/assets/svg/u-projectile.svg)",
+      "Bash(git checkout *)",
+      "Bash(npm install *)",
+      "Bash(node scripts/loadtest.js --n=20 --secs=8)",
+      "Bash(curl -sI http://localhost:3000/)",
+      "Read(//private/tmp/uvq6/export/png/**)"
     ]
   }
 }
