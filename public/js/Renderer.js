@@ -246,12 +246,19 @@ export class Renderer {
     ctx.fillStyle = 'rgba(0,0,0,0.4)';
     ctx.fillRect(0, 0, VP_W, VP_H);
 
-    // Countdown PNG (includes its own "GET READY" styling). Fall back to
-    // procedural text only if the PNG hasn't loaded yet.
+    // Countdown PNG (includes its own "ARENA OPENING IN" styling). Fall back
+    // to procedural text only if the PNG hasn't loaded yet.
+    // Source is 840×960 @2x → render at 1x (420×480) for crisp pixel mapping
+    // and so the embedded copy stays legible.
     const png = this._getPng(`countdown-${seconds}`);
     if (png) {
-      const size = 240;
-      ctx.drawImage(png, VP_W / 2 - size / 2, VP_H / 2 - size / 2, size, size);
+      const w = 420;
+      const h = 480;
+      // Prefer high-quality smoothing for the brief countdown frames
+      const prevSmoothing = ctx.imageSmoothingQuality;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(png, VP_W / 2 - w / 2, VP_H / 2 - h / 2, w, h);
+      ctx.imageSmoothingQuality = prevSmoothing;
     } else {
       ctx.font = '700 20px Gilroy, system-ui, sans-serif';
       ctx.textAlign = 'center';
