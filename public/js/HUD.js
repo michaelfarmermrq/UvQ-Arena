@@ -170,18 +170,19 @@ export class HUD {
       ctx.restore();
     }
 
-    // ── Shield timer ring ─────────────────────────────────────────────────
-    const shieldActive = now < this._shieldUntil;
-    const shieldFlash  = now < this._shieldFlashUntil;
-    if (shieldActive || shieldFlash) {
+    // ── Shield timer ring (always present; inactive until pickup) ─────────
+    {
+      const shieldActive = now < this._shieldUntil;
+      const shieldFlash  = now < this._shieldFlashUntil;
       const fraction = shieldActive ? (this._shieldUntil - now) / SHIELD_DURATION_MS : 0;
       const img = getPng ? getPng('pickup-shield') : null;
       this._drawStatusRing(ctx, 90, H - 40, fraction, '#0A2ECB', img, '🛡', shieldFlash);
     }
 
-    // ── Speed timer ring ──────────────────────────────────────────────────
-    if (now < this._speedUntil) {
-      const fraction = (this._speedUntil - now) / SPEED_DURATION_MS;
+    // ── Speed timer ring (always present; inactive until pickup) ──────────
+    {
+      const speedActive = now < this._speedUntil;
+      const fraction = speedActive ? (this._speedUntil - now) / SPEED_DURATION_MS : 0;
       const img = getPng ? getPng('pickup-speed') : null;
       this._drawStatusRing(ctx, 140, H - 40, fraction, '#88ff88', img, '»', false);
     }
@@ -234,9 +235,12 @@ export class HUD {
 
     // Icon — prefer the PNG sprite; fall back to text emoji while it loads.
     ctx.shadowBlur = 0;
+    // Inactive (fraction === 0) gets a very dim icon so the slot reads as
+    // "available, not active". Low-time-remaining (fraction ≤ 0.2) is an
+    // "about to expire" mid-state.
+    const alpha = fraction === 0 ? 0.22 : (fraction > 0.2 ? 1 : 0.55);
     if (iconImg) {
       const s = r * 1.45;
-      const alpha = fraction > 0.2 ? 1 : 0.35;
       ctx.globalAlpha = alpha;
       ctx.drawImage(iconImg, cx - s / 2, cy - s / 2, s, s);
       ctx.globalAlpha = 1;
@@ -244,7 +248,7 @@ export class HUD {
       ctx.font = 'bold 13px Gilroy, system-ui, sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillStyle = fraction > 0.2 ? color : 'rgba(255,255,255,0.3)';
+      ctx.fillStyle = fraction > 0.2 ? color : `rgba(255,255,255,${alpha})`;
       ctx.fillText(iconFallback, cx, cy);
     }
     ctx.restore();
