@@ -45,6 +45,16 @@ function connect() {
   // eslint-disable-next-line no-undef
   socket = io();
 
+  // Tell the server we're leaving the moment the tab unloads or hides.
+  // Without this the old player would linger in the lobby until the
+  // server's pingTimeout caught up, which made refreshes look like new
+  // ghost players in the list.
+  const disconnectImmediately = () => {
+    try { socket?.disconnect(); } catch { /* ignore */ }
+  };
+  window.addEventListener('pagehide',     disconnectImmediately);
+  window.addEventListener('beforeunload', disconnectImmediately);
+
   wireSocketEvents(socket, {
     onAssigned(data) {
       localPlayerId = data.id;
